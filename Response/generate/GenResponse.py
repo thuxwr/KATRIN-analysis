@@ -5,9 +5,9 @@
 from ROOT import TH1D, TH2D
 import sys, math
 
-sys.path.append('../Scattering/density')
-sys.path.append('../Scattering/energyloss')
-sys.path.append('../Scattering/prob')
+sys.path.append('../../Scattering/density')
+sys.path.append('../../Scattering/energyloss')
+sys.path.append('../../Scattering/prob')
 
 import GetProb, GetEngLoss
 

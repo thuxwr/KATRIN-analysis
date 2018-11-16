@@ -5,7 +5,11 @@
 */
 
 #include "TMath.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TFile.h"
 #include <string>
+#include <sstream>
 
 double B_A = 2.68;
 double B_S = 2.52e4;
@@ -18,24 +22,46 @@ TH1D* density;
 TH1D* scat[3];
 double calib;
 double Ncalib = 5e17;
-double tmpz = -1;
+double tmpz = -10;
 double integ = 0;
 double sigma = 3.4e-18;
+double Z;
 
 double P(int s, double z, double theta);
 double Neff(double z, double theta);
-double gamma(double energy);
+//double gamma(double energy);
 double transmission(double E, double theta, double U);
 double Response(double E, double U);
+double gamma(double energy) {
+	return energy / m_e + 1;
+}
+
 double GetPdf(int ScatterTimes, double epsilon);
 
-void GenResponse()
+using namespace std;
+
+int main(int argc, char** argv)
 {
+	stringstream ss;
+	ss << argv[1];
+	ss >> Z;
+	string Zstr = argv[1];
+
+	int core = -1;
+	stringstream ss2;
+	ss2 << argv[2];
+	ss2 >> core;
+	char corechar[5];
+	sprintf(corechar, "%d", core);
+	string Core = corechar;
+
 	char* KATpath = getenv("KATRIN");
 	string path = KATpath;
 	TFile* densfile = new TFile((path+"/Scattering/density/density.root").c_str(), "READ");
 	density = (TH1D*)densfile->Get("density");
-	calib = density->Integral();
+	int low = 0;
+	int up = density->FindBin(5);
+	calib = density->Integral(low, up);
 
 	TFile* EnergyLossFile = new TFile((path+"/Scattering/energyloss/EnergyLoss.root").c_str(), "READ");
 	scat[0] = (TH1D*)EnergyLossFile->Get("scat0");
@@ -43,16 +69,23 @@ void GenResponse()
 	scat[2] = (TH1D*)EnergyLossFile->Get("scat2");
 
 	/* Test. */
-	TH2D* hist = new TH2D("","",100,E0-35,E0+5,100,E0-35,E0+5);
-	for(int xbin=1; xbin<=100; xbin++) for(int ybin=1; ybin<=100; ybin++) {
+	TH2D* hist = new TH2D("","",500,E0-35,E0+5,500,E0-35,E0+5);
+	for(int xbin=1; xbin<=500; xbin++) for(int ybin=1; ybin<=500; ybin++) {
 		double E = hist->GetXaxis()->GetBinCenter(xbin);
 		double U = hist->GetYaxis()->GetBinCenter(ybin);
 		hist->SetBinContent(xbin, ybin, Response(E, U));
-		cout << "finish xbin: " << xbin << ", ybin: " << ybin << endl;
+		//cout << "finish xbin: " << xbin << ", ybin: " << ybin << endl;
 	}
-	hist->SetName("haha");
-	hist->SaveAs("test.root");
+	hist->SetName("response");
+	hist->SetTitle(("Response function for z="+Zstr+"m").c_str());
+	hist->GetXaxis()->SetTitle("Energy [eV]");
+	hist->GetXaxis()->SetTitleOffset(1.5);
+	hist->GetYaxis()->SetTitleOffset(2);
+	hist->GetYaxis()->SetTitle("Retarding voltage [eV]");
+	hist->SetStats(kFALSE);
+	hist->SaveAs(("result/Core"+Core+".root").c_str());
 
+	return 0;
 }
 
 double P(int s, double z, double theta) {
@@ -62,16 +95,13 @@ double P(int s, double z, double theta) {
 
 double Neff(double z, double theta) {
 	if(z!=tmpz) {
-		int low = density->FindBin(z);
-		int up = density->GetNbinsX();
+		int low = density->FindBin(abs(z));
+		int up = density->FindBin(5);
 		tmpz = z;
 		integ = density->Integral(low, up);
 	}
-	return 1./cos(theta) * integ / calib * Ncalib;
-}
-
-double gamma(double energy) {
-	return energy / m_e + 1;
+	if(z>=0) return 1/cos(theta) * integ / calib * Ncalib / 2;
+	else return 1/cos(theta) * (2 - integ/calib) * Ncalib / 2;
 }
 
 double transmission(double E, double theta, double U) {
@@ -89,11 +119,11 @@ double Response(double E, double U) {
 	double thetamax = asin(sqrt(B_S/B_max));
 
 	double response = 0;
-	TH2D* histtmp = new TH2D("","",100,0,thetamax,500,0,E-U);
-	for(int xbin=1; xbin<=100; xbin++) {
+	TH2D* histtmp = new TH2D("","",500,0,thetamax,1000,0,E-U);
+	for(int xbin=1; xbin<=500; xbin++) {
 		double theta = histtmp->GetXaxis()->GetBinCenter(xbin);
 		double Prob[3];
-		for(int nscat=1; nscat<4; nscat++) Prob[nscat-1] = P(nscat, 2, theta);
+		for(int nscat=1; nscat<4; nscat++) Prob[nscat-1] = P(nscat, Z, theta);
 		for(int ybin=1; ybin<=500; ybin++) {
 			double epsilon = histtmp->GetYaxis()->GetBinCenter(ybin);
 			double EnergyLossPdf = 0;
@@ -105,10 +135,10 @@ double Response(double E, double U) {
 	response += histtmp->Integral("width");
 	delete histtmp;
 
-	TH1D* histtmp2 = new TH1D("","",100,0,thetamax);
-	for(int xbin=1; xbin<=100; xbin++) {
+	TH1D* histtmp2 = new TH1D("","",500,0,thetamax);
+	for(int xbin=1; xbin<=500; xbin++) {
 		double theta = histtmp2->GetXaxis()->GetBinCenter(xbin);
-		histtmp2->SetBinContent(xbin, transmission(E, theta, U) * sin(theta) * P(0,2,theta));
+		histtmp2->SetBinContent(xbin, transmission(E, theta, U) * sin(theta) * P(0,Z,theta));
 	}
 	response += histtmp2->Integral("width");
 	delete histtmp2;
