@@ -28,7 +28,7 @@ class Efficiency
 
 			ifstream data(((string)KATRIN + "/Efficiency/data.dat").c_str());
 			if(!(data.is_open())) {
-				cout << "Data file cannot be opened." << endl;
+				cout << "Data file $KATRIN/Efficiency/data.dat cannot be opened." << endl;
 				exit(0);
 			}
 			string line;

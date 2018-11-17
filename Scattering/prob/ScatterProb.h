@@ -8,6 +8,7 @@
 #define prob_h
 
 #include <string>
+#include <iostream>
 
 using namespace std;
 
@@ -25,9 +26,11 @@ class ScatterProb
 			file = new TFile(path.c_str(), "READ");
 			dens = (TH1D*)file->Get("density");
 
-			tmpz = -1;
+			tmpz = -10;
 			Ncalib = 5e17;
-			calib = dens->Integral();
+			int low = 0;
+			int up = dens->FindBin(5); //Width of WGTS is 10m.
+			calib = dens->Integral(low, up);
 			sigma = 3.4e-18;
 		}
 
@@ -55,12 +58,13 @@ class ScatterProb
 
 		double Neff(double z, double theta) {
 			if(z!=tmpz) {
-				int low = dens->FindBin(z);
-				int up = dens->GetNbinsX();
+				int low = dens->FindBin(abs(z));
+				int up = dens->FindBin(5);
 				tmpz = z;
 				integ = dens->Integral(low, up);
 			}
-			return 1/cos(theta) * integ / calib * Ncalib;
+			if(z>=0) return 1/cos(theta) * integ / calib * Ncalib / 2;
+			else return 1/cos(theta) * (2 - integ/calib) * Ncalib / 2;
 		}
 };
 

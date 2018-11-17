@@ -1,6 +1,6 @@
 /*
 	 Theoretical calculation for beta decay spectrum. 
-	 Doppler broadening is calculated WITHOUT using RooFFTConvPdf, but by directly setting values for each bin.
+	 //Doppler broadening is calculated WITHOUT using RooFFTConvPdf, but by directly setting values for each bin.
 
 	 Final state distribution should be modified to incorporate T2 purity.
 
@@ -16,9 +16,6 @@
 #include <fstream>
 #include "../Configure/Configure.h"
 
-#define Nfinalstate 52 //Discretized final state number
-#define NbinsDecaySpec 700 //Nbins for decay spectrum
-
 using namespace std;
 using namespace Physics;
 
@@ -27,13 +24,13 @@ class Spectrum
 	public:
 		Spectrum() {
 			/* Import final state distribution. */
-			char* KATRIN = getenv("KATRIN");
-			if(KATRIN==0) {
+			char* KATRINpath = getenv("KATRIN");
+			if(KATRINpath==0) {
 				cout << "Environment variable 'KATRIN' is not defined." << endl;
 				exit(0);
 			}
 
-			ifstream data(((string)KATRIN + "/Spectrum/finalstate.dat").c_str());
+			ifstream data(((string)KATRINpath + "/Spectrum/finalstate.dat").c_str());
 			if(!(data.is_open())) {
 				cout << "Data file $KATRIN/Spectrum/finalstate.dat cannot be opened." << endl;
 				exit(0);
@@ -57,13 +54,25 @@ class Spectrum
 		~Spectrum(){}
 
 		TH1D* decayspec(double ms, double E_0) {
-			TH1D* spec = new TH1D("", "", NbinsDecaySpec, -30+KATRIN.E_0_center, 5+KATRIN.E_0_center);
+			TH1D* spec = new TH1D("", "", NbinsDecaySpec, LowBoundary+KATRIN.E_0_center, UpBoundary+KATRIN.E_0_center);
 			for(int i=1; i<=NbinsDecaySpec; i++) {
 				double energy = spec->GetBinCenter(i);
 				spec->SetBinContent(i, shape_fcn(energy, ms, E_0));
 			}
 			spec->Scale(1/spec->Integral());
 			return spec;
+		}
+
+		double GetBinWidth() {
+			return (double)(UpBoundary-LowBoundary)/NbinsDecaySpec;
+		}
+
+		double GetBinCenter(int bin) {
+			if(bin>NbinsDecaySpec || bin<=0) {
+				cout << "Bin number out of range." << endl;
+				return 0;
+			}
+			return LowBoundary + (bin-0.5) * GetBinWidth() + KATRIN.E_0_center;
 		}
 
 
@@ -126,10 +135,6 @@ class Spectrum
 			}
 			return shape;
 		}
-
-
-
-		
 
 };
 

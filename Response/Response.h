@@ -11,6 +11,7 @@
 #define Response_h
 
 #include <string>
+#include <iostream>
 
 #define Nslices 1 // number of source slices
 using namespace std;
