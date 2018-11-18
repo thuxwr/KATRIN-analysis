@@ -45,7 +45,8 @@ class Detect
 				detspec->SetBinContent(bin, content);
 			}
 
-			detspec->Scale(1/detspec->Integral());
+			double scale = KATRIN.Sig_rate/detspec->GetBinContent(detspec->FindBin(18544.25));
+			detspec->Scale(scale);
 			delete broadenspec;
 			return detspec;
 		}

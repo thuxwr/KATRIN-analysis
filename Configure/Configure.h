@@ -32,6 +32,18 @@ class KATRIN
 		/* Spectrum. */
 		double E_0_center = 18.574e3;
 
+		/* Measurement time distribution, in unit:day */
+		double Time[NbinsDetSpec] = {
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
+			5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 130, 130, 130, 130, 20, 20, 20, 20, 20, 20,
+			20, 20, 20, 20, 20, 20, 20, 20, 20, 20
+			};
+
+		/* Expected signal rate and background rate, for Monte Carlo generation. */
+		double Sig_rate = 27.54 * 86400; // For U=18544.25V, 27.54Hz
+		double Bkg_rate = 10e-3 * 86400; // 10mHz
+
 };
 
 namespace Physics {

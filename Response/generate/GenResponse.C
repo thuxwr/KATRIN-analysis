@@ -69,8 +69,8 @@ int main(int argc, char** argv)
 	scat[2] = (TH1D*)EnergyLossFile->Get("scat2");
 
 	/* Test. */
-	TH2D* hist = new TH2D("","",500,E0-35,E0+5,500,E0-35,E0+5);
-	for(int xbin=1; xbin<=500; xbin++) for(int ybin=1; ybin<=500; ybin++) {
+	TH2D* hist = new TH2D("","",100,E0-35,E0+5,100,E0-35,E0+5);
+	for(int xbin=1; xbin<=100; xbin++) for(int ybin=1; ybin<=100; ybin++) {
 		double E = hist->GetXaxis()->GetBinCenter(xbin);
 		double U = hist->GetYaxis()->GetBinCenter(ybin);
 		hist->SetBinContent(xbin, ybin, Response(E, U));
@@ -119,12 +119,12 @@ double Response(double E, double U) {
 	double thetamax = asin(sqrt(B_S/B_max));
 
 	double response = 0;
-	TH2D* histtmp = new TH2D("","",500,0,thetamax,1000,0,E-U);
-	for(int xbin=1; xbin<=500; xbin++) {
+	TH2D* histtmp = new TH2D("","",100,0,thetamax,100,0,E-U);
+	for(int xbin=1; xbin<=100; xbin++) {
 		double theta = histtmp->GetXaxis()->GetBinCenter(xbin);
 		double Prob[3];
 		for(int nscat=1; nscat<4; nscat++) Prob[nscat-1] = P(nscat, Z, theta);
-		for(int ybin=1; ybin<=500; ybin++) {
+		for(int ybin=1; ybin<=100; ybin++) {
 			double epsilon = histtmp->GetYaxis()->GetBinCenter(ybin);
 			double EnergyLossPdf = 0;
 			for(int nscat=1; nscat<4; nscat++) EnergyLossPdf += Prob[nscat-1]*GetPdf(nscat, epsilon);
@@ -135,8 +135,8 @@ double Response(double E, double U) {
 	response += histtmp->Integral("width");
 	delete histtmp;
 
-	TH1D* histtmp2 = new TH1D("","",500,0,thetamax);
-	for(int xbin=1; xbin<=500; xbin++) {
+	TH1D* histtmp2 = new TH1D("","",100,0,thetamax);
+	for(int xbin=1; xbin<=100; xbin++) {
 		double theta = histtmp2->GetXaxis()->GetBinCenter(xbin);
 		histtmp2->SetBinContent(xbin, transmission(E, theta, U) * sin(theta) * P(0,Z,theta));
 	}
