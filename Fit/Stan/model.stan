@@ -12,7 +12,7 @@ data {
 parameters {
 	real<lower=0, upper=20> mass;
 	real<lower=18564, upper=18584> endpoint;
-	real<lower=0.8, upper=1.2> A_sig;
+	real<lower=-10, upper=10> A_sig;
 	real<lower=0.8, upper=1.2> A_bkg;
 }
 
@@ -21,7 +21,7 @@ model {
 	real sig[nbins] = signal(pars);
 	real pred[nbins];
 	for(n in 1:nbins) {
-		pred[n] = A_sig * sig[n] + A_bkg * bkg();
+		pred[n] = sig[n] * (A_sig*0.0001 + 1) + A_bkg * bkg();
 	}
 	rate ~ normal(pred, error);
 }

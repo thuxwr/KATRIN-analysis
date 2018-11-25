@@ -15,6 +15,7 @@
 
 using namespace std;
 using namespace Physics;
+using namespace TMath;
 
 class Detect
 {
@@ -51,6 +52,13 @@ class Detect
 			return detspec;
 		}
 
+		TH1D* DetSpec(double mass, double endpoint, double z=0) {
+			TH1D* tmp = spec.decayspec(mass, endpoint);
+			TH1D* detspec = DetSpec(tmp, z);
+			delete tmp;
+			return detspec;
+		}
+
 	private:
 		static Detect* detect;
 		KATRIN KATRIN;
@@ -61,7 +69,7 @@ class Detect
 		double core_E_cms, core_bv, core_T_bt;
 
 		double sigma_E(double E_cms, double bv, double T_bt) {
-			return sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);
+			return Sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);
 		}
 
 		void InitTrans(double bv, double T_bt) { // Allow users to change default temperature and bulk velocity.
@@ -113,7 +121,7 @@ class Detect
 		}
 
 		double beta(double energy) {
-			return sqrt(1. - 1. /gamma(energy) /gamma(energy));
+			return Sqrt(1. - 1. /gamma(energy) /gamma(energy));
 		}
 
 		static double core(double* x, double* par) { // Cannot pass pars to external fcn.
@@ -125,9 +133,9 @@ class Detect
 			double v_cms = detect->beta(E_cms);
 			double v_M = (v_lab - v_cms) / (1 - v_lab * v_cms);
 			double u = bv / c;
-			double cos_thetamax = sqrt(1 - detect->KATRIN.B_S/detect->KATRIN.B_max);
-			double sigma_v  = sqrt(k_B*T_bt/M_T2);
-			double g_vM = 1/(1-cos_thetamax)/2/u * (TMath::Erf((v_M-cos_thetamax*u)/(sqrt(2)*sigma_v)) - TMath::Erf((v_M-u)/(sqrt(2)*sigma_v)));
+			double cos_thetamax = Sqrt(1 - detect->KATRIN.B_S/detect->KATRIN.B_max);
+			double sigma_v  = Sqrt(k_B*T_bt/M_T2);
+			double g_vM = 1/(1-cos_thetamax)/2/u * (TMath::Erf((v_M-cos_thetamax*u)/(Sqrt(2)*sigma_v)) - TMath::Erf((v_M-u)/(Sqrt(2)*sigma_v)));
 			double g_E = g_vM / (detect->gamma(E_cms) * m_e * v_cms);
 			return g_E;
 		}

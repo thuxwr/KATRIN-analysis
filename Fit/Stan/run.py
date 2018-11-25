@@ -2,7 +2,7 @@
 #
 # Weiran, Nov.18, 2018.
 
-import pystan
+import pystan, os
 from ROOT import gROOT, TFile, TH1D
 
 # Left blank for automatic cache.
@@ -39,8 +39,13 @@ data['error'] = error
 
 # Configure Stan model and fitter.
 sm = pystan.StanModel(file='model.stan', includes=['Pred.h'], allow_undefined=True, include_dirs=['.'], verbose=False)
-fit = sm.sampling(data=data, sample_file = 'sample', iter=600, chains=1)
+fit = sm.sampling(data=data, sample_file = 'sample', iter=1000, chains=1)
+#a = sm.optimizing(data=data);
 print(fit.stansummary(digits_summary=4))
+#print(a)
+
+# Delete tmp files.
+os.remove("_tmp.root")
 
 
 
