@@ -131,7 +131,12 @@ class Spectrum
 				double Epsilon = epsilon(x, fsenergy[i], E_0);
 				if(Epsilon<=0) continue; // cannot reach this final state
 				if(pow(Epsilon, 2) <= ms) continue; // cannot reach this final state
-				shape += fsprob[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergy[i], E_0);
+				if(ms>=0)
+					shape += fsprob[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergy[i], E_0);
+				else {//Non-physical extrapolation.
+					double mu = 0.72 * sqrt(-1 * ms);
+					shape += fsprob[i] * (Epsilon + mu*exp(-1 - Epsilon/mu)) * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergy[i], E_0);
+				}
 			}
 			return shape;
 		}
