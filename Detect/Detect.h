@@ -22,7 +22,7 @@ class Detect
 	public:
 		Detect() {
 			detect = this;
-			InitTrans(KATRIN.bv, KATRIN.T_bt);
+			InitTrans(katrin.bv, katrin.T_bt);
 		}
 
 		~Detect() {
@@ -33,35 +33,40 @@ class Detect
 			InitTrans(bv, T_bt);
 		}
 
-		TH1D* DetSpec(TH1D* decayspec, double z=0) { // Get detected spectrum from decay spectrum.
+		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double z=0) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
+			TH1D* decayspec = spec.decayspec(mass, endpoint);
 			TH1D* broadenspec = Broaden(decayspec);
-			TH1D* detspec = new TH1D("", "", NbinsDetSpec, DetLow+KATRIN.E_0_center, DetUp+KATRIN.E_0_center);
-			for(int bin=1; bin<=NbinsDetSpec; bin++) {
+			double* detspec = new double[nvoltage];
+			/* Normalization. */
+			double scale;
+			{
 				double content = 0;
-				double U = detspec->GetBinCenter(bin);
+				double U = 18544.25;
 				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
 					double E = broadenspec->GetBinCenter(i);
 					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U, z);
 				}
-				detspec->SetBinContent(bin, content);
+				scale = katrin.Sig_rate/content;
 			}
 
-			double scale = KATRIN.Sig_rate/detspec->GetBinContent(detspec->FindBin(18544.25));
-			detspec->Scale(scale);
-			delete broadenspec;
-			return detspec;
-		}
+			for(int n=0; n<nvoltage; n++) {
+				double content = 0;
+				double U = voltage[n];
+				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
+					double E = broadenspec->GetBinCenter(i);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U, z);
+				}
+				detspec[n] = content * scale;
+			}
 
-		TH1D* DetSpec(double mass, double endpoint, double z=0) {
-			TH1D* tmp = spec.decayspec(mass, endpoint);
-			TH1D* detspec = DetSpec(tmp, z);
-			delete tmp;
+			delete decayspec;
+			delete broadenspec;
 			return detspec;
 		}
 
 	private:
 		static Detect* detect;
-		KATRIN KATRIN;
+		KATRIN katrin;
 		Spectrum spec;
 		Response response;
 		double** trans; // transition matrix for i'th bin in decay spectrum and j'th bin in broadened spectrum
@@ -78,8 +83,8 @@ class Detect
 
 			/* Decide size of transition matrix. */
 			double binwidth = spec.GetBinWidth();
-			double sigma = sigma_E(KATRIN.E_0_center, bv, T_bt);
-			nsize = 2 * TMath::Ceil(5 * sigma / binwidth) + 1; // Calculate convolution inside 5sigma.
+			double sigma = sigma_E(katrin.E_0_center, bv, T_bt);
+			nsize = 2 * TMath::CeilNint(5 * sigma / binwidth) + 1; // Calculate convolution inside 5sigma.
 			trans = new double* [NbinsDecaySpec];
 			for(int i=0; i<NbinsDecaySpec; i++) {
 				trans[i] = new double[nsize];
@@ -133,7 +138,7 @@ class Detect
 			double v_cms = detect->beta(E_cms);
 			double v_M = (v_lab - v_cms) / (1 - v_lab * v_cms);
 			double u = bv / c;
-			double cos_thetamax = Sqrt(1 - detect->KATRIN.B_S/detect->KATRIN.B_max);
+			double cos_thetamax = Sqrt(1 - detect->katrin.B_S/detect->katrin.B_max);
 			double sigma_v  = Sqrt(k_B*T_bt/M_T2);
 			double g_vM = 1/(1-cos_thetamax)/2/u * (TMath::Erf((v_M-cos_thetamax*u)/(Sqrt(2)*sigma_v)) - TMath::Erf((v_M-u)/(Sqrt(2)*sigma_v)));
 			double g_E = g_vM / (detect->gamma(E_cms) * m_e * v_cms);

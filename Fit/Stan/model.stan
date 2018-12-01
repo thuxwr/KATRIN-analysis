@@ -12,7 +12,7 @@ data {
 parameters {
 	real<lower=0, upper=20> mass;
 	real<lower=18564, upper=18584> endpoint;
-	real<lower=-10, upper=10> A_sig;
+	real<lower=-10000, upper=10000> A_sig;
 	real<lower=0.8, upper=1.2> A_bkg;
 }
 

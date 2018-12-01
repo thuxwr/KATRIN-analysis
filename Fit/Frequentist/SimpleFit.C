@@ -9,9 +9,9 @@
 
 Simulation sim;
 TMinuit minuit;
-KATRIN KATRIN;
+KATRIN katrin;
 
-double pmass = 0.35*0.35;
+double pmass = 0;
 double pendpoint = 18574;
 
 double* Time;
@@ -29,9 +29,9 @@ using namespace TMath;
 void SimpleFit()
 {
 	/* Input time distribution and threshold. Generate or read data. One can also change the time and threshold. */
-	Time = KATRIN.Time;
-	Voltage = KATRIN.Voltage;
-	nvoltage = KATRIN.Nbins;
+	Time = katrin.Time;
+	Voltage = katrin.Voltage;
+	nvoltage = katrin.Nbins;
 
 	/* This block for simulated sample. */
 	sample = sim.Generate(pmass, pendpoint, nvoltage, Voltage, Time);
@@ -44,11 +44,11 @@ void SimpleFit()
 	/************************************/
 
 	/* This block for real data.
-	Rate = KATRIN.Rate;
-	error = KATRIN.Error;
+	Rate = katrin.Rate;
+	error = katrin.Error;
 	*/
 
-	minuit.DefineParameter(0, "mass", pmass, 0.001, 0, 1e4);
+	minuit.DefineParameter(0, "mass", pmass, 0.001, 0, 0);
 	minuit.DefineParameter(1, "endpoint", pendpoint, 0.01, pendpoint-5, pendpoint+5);
 	minuit.DefineParameter(2, "A_sig", 1, 1e-6, 0, 0);
 	minuit.DefineParameter(3, "A_bkg", 1, 1e-6, 0, 0);

@@ -22,6 +22,7 @@
 #include <string>
 
 using namespace std;
+using namespace TMath;
 
 class KATRIN
 {
@@ -53,8 +54,8 @@ class KATRIN
 			}
 
 			for(int i=0; i<Nbins; i++) {
-				Rate[i] = Count[i]/Time[i]*86400.;
-				Error[i] = sqrt(Count[i])/Time[i]*86400.;
+				Rate[i] = Count[i]/Time[i];
+				Error[i] = sqrt(Count[i])/Time[i];
 			}
 		}
 
@@ -94,8 +95,8 @@ class KATRIN
 		double Error[NVoltageMax];
 
 		/* Expected signal rate and background rate, for Monte Carlo generation. */
-		double Sig_rate = 27.54 * 86400; // For U=18544.25V, 27.54Hz
-		double Bkg_rate = 10e-3 * 86400; // 10mHz
+		double Sig_rate = 27.54; // For U=18544.25V, 27.54Hz
+		double Bkg_rate = 10e-3; // 10mHz
 
 };
 

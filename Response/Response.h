@@ -28,7 +28,7 @@ class Response
 
 			string path = (string)KATRIN + "/Response/data/";
 			for(int i=0; i<Nslices; i++) {
-				file[i] = new TFile((path+"Core0.root").c_str(), "READ");
+				file[i] = new TFile((path+"Average.root").c_str(), "READ");
 				response[i] = (TH2D*)file[i]->Get("response");
 			}
 		}
@@ -42,9 +42,9 @@ class Response
 		}
 
 		double GetResponse(double E, double U, double z=0) {
-			int xbin = response[0]->GetXaxis()->FindBin(E);
-			int ybin = response[0]->GetYaxis()->FindBin(U);
-			return response[0]->GetBinContent(xbin, ybin);
+			if(E>=response[0]->GetXaxis()->GetXmax() || U>=response[0]->GetYaxis()->GetXmax()) return 0;
+			else if(E<=response[0]->GetXaxis()->GetXmin() || U<=response[0]->GetYaxis()->GetXmin()) return 0;
+			else return response[0]->Interpolate(E, U);
 		}
 
 

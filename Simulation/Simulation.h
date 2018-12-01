@@ -23,46 +23,43 @@ class Simulation
 		}
 
 		~Simulation() {
+			delete rndm;
 		}
 
 		/* B_A, B_S and B_max is not allowed to change in MC generation. */
 		/* Reason: Response function should be recalculated if magnetic field changes. */
-		TH1D* Generate(double mass, double endpoint, double A_sig=1, double A_bkg=1, double z=0) {
-			TH1D* sim = new TH1D("", "", NbinsDetSpec, DetLow+KATRIN.E_0_center, DetUp+KATRIN.E_0_center);
-			TH1D* theory = detect.DetSpec(spec.decayspec(mass, endpoint), z);
-			for(int bin=1; bin<=NbinsDetSpec; bin++) {
-				double signal = A_sig * theory->GetBinContent(bin) * KATRIN.Time[bin-1];
-				double bkg = A_bkg * KATRIN.Bkg_rate * KATRIN.Time[bin-1];
-				double entries = rndm->PoissonD(signal+bkg);
-				sim->SetBinContent(bin, entries/KATRIN.Time[bin-1]);
-				sim->SetBinError(bin, sqrt(entries)/KATRIN.Time[bin-1]);
+		double* Generate(double mass, double endpoint, int nvoltage, double* voltage, double* time, double A_sig=1, double A_bkg=1, double z=0) {
+			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage, z);
+			double* sim = new double[nvoltage];
+			for(int n=0; n<nvoltage; n++) {
+				double signal = A_sig * theory[n] * time[n];
+				double bkg = A_bkg * katrin.Bkg_rate * time[n];
+				long int entries = (long int)(rndm->PoissonD(signal + bkg));
+				sim[n] = entries;
 			}
 			delete theory;
 			return sim;
 		}
 
-		TH1D* Asimov(double mass, double endpoint, double A_sig=1, double A_bkg=1, double z=0) {
-			TH1D* asimov = new TH1D("", "", NbinsDetSpec, DetLow+KATRIN.E_0_center, DetUp+KATRIN.E_0_center);
-			TH1D* theory = detect.DetSpec(spec.decayspec(mass, endpoint), z);
-			for(int bin=1; bin<=NbinsDetSpec; bin++) {
-				double signal = A_sig * theory->GetBinContent(bin) * KATRIN.Time[bin-1];
-				double bkg = A_bkg * KATRIN.Bkg_rate * KATRIN.Time[bin-1];
-				double entries = signal+bkg;
-				asimov->SetBinContent(bin, entries/KATRIN.Time[bin-1]);
-				asimov->SetBinError(bin, sqrt(entries)/KATRIN.Time[bin-1]);
+		/* Asimov data returns event rate for each point. */
+		double* Asimov(double mass, double endpoint, int nvoltage, double* voltage, double A_sig=1, double A_bkg=1, double z=0) { // For discrete data.
+			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage, z);
+			double* asimov = new double[nvoltage];
+			for(int n=0; n<nvoltage; n++) {
+				double signal = A_sig * theory[n];
+				double bkg = A_bkg * katrin.Bkg_rate;
+				double entries = signal + bkg;
+				asimov[n] = entries;
 			}
 			delete theory;
 			return asimov;
 		}
 
-		
 	private:
-		KATRIN KATRIN;
+		KATRIN katrin;
 		Detect detect;
 		Spectrum spec;
 		TRandom3* rndm;
-
-
 
 };
 

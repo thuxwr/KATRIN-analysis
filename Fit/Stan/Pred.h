@@ -8,21 +8,24 @@
 #include "../../Configure/Configure.h"
 
 Detect detect;
-KATRIN KATRIN;
+KATRIN katrin;
+
+int nvoltage = katrin.Nbins;
+double* voltage = katrin.Voltage;
 
 using namespace std;
 
-double bkg(ostream* pstream) { return KATRIN.Bkg_rate; }
+double bkg(ostream* pstream) { return katrin.Bkg_rate; }
 
 inline vector<double> signal(vector<double> pars, ostream* pstream) {
 	double mass = pars.at(0);
 	double endpoint = pars.at(1);
 	vector<double> entries = {};
-	TH1D* detspec = detect.DetSpec(mass, endpoint);
-	for(int bin=1; bin<=detspec->GetNbinsX(); bin++) {
-		entries.push_back(detspec->GetBinContent(bin));
+	double* detspec = detect.DetSpec(mass, endpoint, nvoltage, voltage);
+	for(int bin=0; bin<nvoltage; bin++) {
+		entries.push_back(detspec[bin]);
 	}
-	delete detspec;
+	delete[] detspec;
 	return entries;
 }
 
@@ -60,7 +63,7 @@ inline vector<var> signal(const vector<var>& pars, ostream* pstream) {
 	}
 
 	vector<var> jacob = {};
-	for(int bin=0; bin<NbinsDetSpec; bin++) {
+	for(int bin=0; bin<nvoltage; bin++) {
 		double* grad = ChainableStack::memalloc_.alloc_array<double>(pars.size());
 		for(int i=0; i<pars.size(); i++) {
 			double D_1 = (D1_high[i].at(bin)-D1_low[i].at(bin)) /2. /precision[i];

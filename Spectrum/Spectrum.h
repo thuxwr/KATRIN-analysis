@@ -54,7 +54,7 @@ class Spectrum
 		~Spectrum(){}
 
 		TH1D* decayspec(double ms, double E_0) {
-			TH1D* spec = new TH1D("", "", NbinsDecaySpec, LowBoundary+KATRIN.E_0_center, UpBoundary+KATRIN.E_0_center);
+			TH1D* spec = new TH1D("", "", NbinsDecaySpec, LowBoundary+katrin.E_0_center, UpBoundary+katrin.E_0_center);
 			for(int i=1; i<=NbinsDecaySpec; i++) {
 				double energy = spec->GetBinCenter(i);
 				spec->SetBinContent(i, shape_fcn(energy, ms, E_0));
@@ -72,14 +72,14 @@ class Spectrum
 				cout << "Bin number out of range." << endl;
 				return 0;
 			}
-			return LowBoundary + (bin-0.5) * GetBinWidth() + KATRIN.E_0_center;
+			return LowBoundary + (bin-0.5) * GetBinWidth() + katrin.E_0_center;
 		}
 
 
 	private:
 		double fsenergy[Nfinalstate]; //Final state energy for T2 
 		double fsprob[Nfinalstate]; //Final state prob for T2
-		KATRIN KATRIN;
+		KATRIN katrin;
 
 		/* Some useful functions. */
 		double gamma(double energy) {
