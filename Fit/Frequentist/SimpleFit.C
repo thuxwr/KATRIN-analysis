@@ -32,6 +32,7 @@ void SimpleFit()
 	Time = katrin.Time;
 	Voltage = katrin.Voltage;
 	nvoltage = katrin.Nbins;
+	sim.SetMagnetic(katrin.B_A, katrin.B_S, katrin.B_max);
 
 	/* This block for simulated sample. */
 	sample = sim.Generate(pmass, pendpoint, nvoltage, Voltage, Time);
@@ -43,7 +44,7 @@ void SimpleFit()
 	}
 	/************************************/
 
-	/* This block for real data.
+	/* This block for real data. 
 	Rate = katrin.Rate;
 	error = katrin.Error;
 	*/
@@ -52,6 +53,15 @@ void SimpleFit()
 	minuit.DefineParameter(1, "endpoint", pendpoint, 0.01, pendpoint-5, pendpoint+5);
 	minuit.DefineParameter(2, "A_sig", 1, 1e-6, 0, 0);
 	minuit.DefineParameter(3, "A_bkg", 1, 1e-6, 0, 0);
+
+	/* Nuisance parameters. */
+	minuit.DefineParameter(4, "B_A", katrin.B_A, 1e-5*katrin.B_A, 0, 0);
+	minuit.DefineParameter(5, "B_S", katrin.B_S, 1e-5*katrin.B_S, 0, 0);
+	minuit.DefineParameter(6, "B_max", katrin.B_max, 1e-5*katrin.B_max, 0, 0);
+	//minuit.FixParameter(4);
+	//minuit.FixParameter(5);
+	minuit.FixParameter(6);
+
 	minuit.SetFCN(fcn);
 	minuit.SetErrorDef(1);
 	minuit.Migrad();
@@ -60,6 +70,7 @@ void SimpleFit()
 
 void fcn(int &npar, double* gin, double &f, double* par, int iflag) {
 	delete theory;
+	sim.SetMagnetic(par[4], par[5], par[6]);
 	theory = sim.Asimov(par[0], par[1], nvoltage, Voltage, par[2], par[3]);
 	double chi2 = 0;
 	for(int i=0; i<nvoltage; i++) {
@@ -67,6 +78,11 @@ void fcn(int &npar, double* gin, double &f, double* par, int iflag) {
 		double meas = Rate[i];
 		double Error = error[i];
 		chi2 += pow((pred-meas)/Error, 2);
+
+		/* Punishing. */
+		chi2 += pow((par[4]-katrin.B_A)/katrin.B_A_sigma /2, 2);
+		chi2 += pow((par[5]-katrin.B_S)/katrin.B_S_sigma /2, 2);
+		chi2 += pow((par[6]-katrin.B_max)/katrin.B_max_sigma /2, 2);
 	}
 	f = chi2;
 }

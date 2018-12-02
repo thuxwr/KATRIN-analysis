@@ -20,23 +20,40 @@ using namespace TMath;
 class Detect
 {
 	public:
-		Detect() {
+		Detect(double z=0) {
 			detect = this;
 			InitTrans(katrin.bv, katrin.T_bt);
+			_mass = -1;
+			_endpoint = 0;
+			response.SetZ(z);
 		}
 
 		~Detect() {
 			delete []trans;
+			delete broadenspec;
 		}
 
 		void Setup(double bv, double T_bt) { // Re-setup bulk velocity and temperature.
 			InitTrans(bv, T_bt);
 		}
 
-		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double z=0) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
-			TH1D* decayspec = spec.decayspec(mass, endpoint);
-			TH1D* broadenspec = Broaden(decayspec);
+		void SetMagnetic(double B_A, double B_S, double B_max) {
+			_B_A = B_A;
+			_B_S = B_S;
+			_B_max = B_max;
+		}
+
+		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
+			if(mass!=_mass || endpoint!=_endpoint) {
+				delete broadenspec;
+				TH1D* decayspec = spec.decayspec(mass, endpoint);
+				broadenspec = Broaden(decayspec);
+				delete decayspec;
+			}
+
 			double* detspec = new double[nvoltage];
+			response.SetupResponse(_B_A, _B_S, _B_max);
+
 			/* Normalization. */
 			double scale;
 			{
@@ -44,7 +61,7 @@ class Detect
 				double U = 18544.25;
 				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
 					double E = broadenspec->GetBinCenter(i);
-					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U, z);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
 				}
 				scale = katrin.Sig_rate/content;
 			}
@@ -54,13 +71,11 @@ class Detect
 				double U = voltage[n];
 				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
 					double E = broadenspec->GetBinCenter(i);
-					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U, z);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
 				}
 				detspec[n] = content * scale;
 			}
 
-			delete decayspec;
-			delete broadenspec;
 			return detspec;
 		}
 
@@ -72,6 +87,9 @@ class Detect
 		double** trans; // transition matrix for i'th bin in decay spectrum and j'th bin in broadened spectrum
 		int nsize;
 		double core_E_cms, core_bv, core_T_bt;
+		TH1D* broadenspec;
+		double _mass, _endpoint;
+		double _B_A, _B_S, _B_max;
 
 		double sigma_E(double E_cms, double bv, double T_bt) {
 			return Sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);

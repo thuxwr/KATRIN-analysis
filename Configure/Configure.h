@@ -65,6 +65,9 @@ class KATRIN
 		double B_A = 2.68; // in unit:Gauss
 		double B_S = 2.52e4; // in unit:Gauss
 		double B_max = 4.2e4; // in unit:Gauss
+		double B_A_sigma = 0.01;
+		double B_S_sigma = 50;
+		double B_max_sigma = 100;
 
 		/* Source. */
 		double epsilon_T = 0.95; // T2 purity

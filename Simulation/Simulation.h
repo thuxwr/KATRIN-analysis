@@ -19,17 +19,19 @@ class Simulation
 {
 	public:
 		Simulation() {
-			rndm = new TRandom3(0);
+			rndm = new TRandom3();
 		}
 
 		~Simulation() {
 			delete rndm;
 		}
 
-		/* B_A, B_S and B_max is not allowed to change in MC generation. */
-		/* Reason: Response function should be recalculated if magnetic field changes. */
-		double* Generate(double mass, double endpoint, int nvoltage, double* voltage, double* time, double A_sig=1, double A_bkg=1, double z=0) {
-			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage, z);
+		void SetMagnetic(double B_A, double B_S, double B_max) {
+			detect.SetMagnetic(B_A, B_S, B_max);
+		}
+
+		double* Generate(double mass, double endpoint, int nvoltage, double* voltage, double* time, double A_sig=1, double A_bkg=1) {
+			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage);
 			double* sim = new double[nvoltage];
 			for(int n=0; n<nvoltage; n++) {
 				double signal = A_sig * theory[n] * time[n];
@@ -42,8 +44,8 @@ class Simulation
 		}
 
 		/* Asimov data returns event rate for each point. */
-		double* Asimov(double mass, double endpoint, int nvoltage, double* voltage, double A_sig=1, double A_bkg=1, double z=0) { // For discrete data.
-			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage, z);
+		double* Asimov(double mass, double endpoint, int nvoltage, double* voltage, double A_sig=1, double A_bkg=1) { // For discrete data.
+			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage);
 			double* asimov = new double[nvoltage];
 			for(int n=0; n<nvoltage; n++) {
 				double signal = A_sig * theory[n];
