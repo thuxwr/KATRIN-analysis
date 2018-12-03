@@ -85,7 +85,7 @@ class ScatterProb
 
 		double Neff(double z, double cos_theta) {
 			if(z!=tmpz) {
-				int low = dens->FindBin(abs(z));
+				int low = dens->FindBin(TMath::Abs(z));
 				int up = dens->FindBin(5);
 				tmpz = z;
 				integ = dens->Integral(low, up);

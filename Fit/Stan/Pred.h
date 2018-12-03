@@ -20,7 +20,11 @@ double bkg(ostream* pstream) { return katrin.Bkg_rate; }
 inline vector<double> signal(vector<double> pars, ostream* pstream) {
 	double mass = pars.at(0);
 	double endpoint = pars.at(1);
+	double B_A = pars.at(2);
+	double B_S = pars.at(3);
+	double B_max = pars.at(4);
 	vector<double> entries = {};
+	detect.SetMagnetic(B_A, B_S, B_max);
 	double* detspec = detect.DetSpec(mass, endpoint, nvoltage, voltage);
 	for(int bin=0; bin<nvoltage; bin++) {
 		entries.push_back(detspec[bin]);
@@ -40,7 +44,7 @@ inline vector<var> signal(const vector<var>& pars, ostream* pstream) {
 		operands[i] = pars.at(i).vi_;
 	}
 
-	double precision[2] = {1e-5, 1e-5}; // precision for calculating first derivative
+	double precision[5] = {1e-5, 1e-5, 1e-5, 1e-2, 1e-2}; // precision for calculating first derivative
 	vector<double> entries = signal(pars_d, pstream);
 	vector<double> D1_high[pars.size()], D1_low[pars.size()], D2_high[pars.size()], D2_low[pars.size()];
 	for(int i=0; i<pars.size(); i++) {
