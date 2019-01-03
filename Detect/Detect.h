@@ -25,7 +25,8 @@ class Detect
 			InitTrans(katrin.bv, katrin.T_bt);
 			_mass = -1;
 			_endpoint = 0;
-			response.SetZ(z);
+			//response.SetZ(z);
+			//response.SetSlice(50);
 		}
 
 		~Detect() {
@@ -78,6 +79,9 @@ class Detect
 
 			return detspec;
 		}
+
+		void initialize(int argc, char** argv) { response.initialize(argc, argv); }
+		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
 
 	private:
 		static Detect* detect;

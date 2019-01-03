@@ -57,6 +57,9 @@ class Simulation
 			return asimov;
 		}
 
+		void initialize(int argc, char** argv) { detect.initialize(argc, argv); }
+		void SetSlice(int iSlice) { detect.SetSlice(iSlice); }
+
 	private:
 		KATRIN katrin;
 		Detect detect;

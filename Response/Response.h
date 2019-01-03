@@ -9,6 +9,9 @@
 	 Allow magnetic field to fluctuate, at the cost of computing time.
 	 An approximation is made such that detector response only relies on E-U, but not their values respectively.
 	 Weiran, Dec.1, 2018.
+
+	 Add cyclotron radiation.
+	 Weiran, Jan.2, 2019.
 */
 
 #ifndef Response_h
@@ -19,6 +22,11 @@
 #include "../Scattering/prob/ScatterProb.h"
 #include "../Scattering/energyloss/EngLoss.h"
 #include "../Configure/Configure.h"
+#include "SSCTransmissionSynchrotron.h"
+#include "SSCWGTS.h"
+#include "SSCGeometry.h"
+#include "XMLInitialization.h"
+#include "KToolbox.h"
 
 #define Nslices 1 // number of source slices
 using namespace std;
@@ -32,14 +40,49 @@ class Response
 			_B_A = 0;
 			_B_S = 0;
 			_B_max = 0;
+			tolerance = 1e-7;
+			response = new TGraph;
 		}
 
 		~Response() {
-			delete response;
 		}
 
+		void initialize(int argc, char** argv) {
+			if(IsSynchrotron) {
+				/* Setup synchrotron transmission from Kasper. */
+				char* KASPER_path = getenv("KASPERSYS");
+				if(KASPER_path==0) {
+					cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
+					exit(0);
+				}
+				if(true) { //Always use SSC setup.
+					char** input = new char*[2];
+					input[0] = argv[0];
+					input[1] = (char*)(((string)KASPER_path + "/config/SSC/ssc.xml").data());
+					Initialize(2, input);
+					myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
+					myWGTS->Initialize();
+
+					/* Cyclotron radiation only depends on z position and pitch angle. */
+					trans = new SSCTransmissionSynchrotron;
+					trans->Initialize();
+				}
+			}
+		}
+
+		/* Either use SetZ or SetSlice. */
 		void SetZ(double z) {
 			scat.SetProbCumulate(z);
+		}
+
+		void SetSlice(int iSlice) {
+			trans->SetVoxel(&(myWGTS->GetVoxel(iSlice)));
+			scat.SetProbCumulate(myWGTS->GetSlice(iSlice).GetCenterZ());
+			data = &(trans->GetSynchrotronData());
+		}
+
+		double GetSyncEngLoss(double angle) {
+			return data->GetEnergyLoss(angle);
 		}
 
 		void SetupResponse(double B_A, double B_S, double B_max) { // Construct a response function.
@@ -89,10 +132,14 @@ class Response
 		EngLoss engloss;
 		KATRIN katrin;
 		TGraph* response;
+		SSCWGTS* myWGTS;
+		SSCTransmissionSynchrotron* trans;
+		SSCSynchrotronData* data;
 		string GetSourceFile(double z); // Left blank for further usage.
 		double _B_A, _B_S, _B_max;
 		double UnscatResponse;
 		double xmax;
+		double tolerance;
 
 		double gamma(double energy) {
 			return energy / m_e + 1;
@@ -104,9 +151,32 @@ class Response
 			else return 0;
 		}
 
+		double SinSquare(double x) {
+			return x / katrin.E_0_center / (gamma(katrin.E_0_center)+1) * 2 * _B_S / _B_A;
+		}
+
 		double GetCosMax(double x) {
+			if(x<=0) return 1;
 			double cosmaxback = sqrt(1-_B_S/_B_max); // minimum angle for reflection.
-			double sinsquare = x / katrin.E_0_center / (gamma(katrin.E_0_center)+1) * 2 * _B_S / _B_A;
+			if(IsSynchrotron) {
+				double theta = acos(cosmaxback) / pi * 180;
+				double syncloss = GetSyncEngLoss(theta);
+				if(SinSquare(x-syncloss)>_B_S/_B_max) return cosmaxback;
+			}
+
+			double sinsquare = SinSquare(x);
+			double sinsquaremax = -1;
+
+			while(IsSynchrotron) { 
+				if(sinsquare>=1) break; //Safe.
+				sinsquaremax = sinsquare;
+				double theta = asin(sqrt(sinsquare)) / pi * 180.;
+				double syncloss = GetSyncEngLoss(theta);
+				sinsquare = SinSquare(x-syncloss);
+				sinsquare = (sinsquare + sinsquaremax)/2.;
+				if(abs(sinsquaremax-sinsquare)<tolerance) break;
+			}
+
 			if(sinsquare>1) sinsquare = 1; // Can always be detected.
 			double cosmax = sqrt(1-sinsquare);
 			if(cosmax<cosmaxback) cosmax = cosmaxback;

@@ -12,9 +12,12 @@
 #define LowBoundary -35 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
 
-#define NVoltageMax 70 //Nbins for detected spectrum
+#define NVoltageMax 10000 //Nbins for detected spectrum
 #define DetLow -30 //Low boundary for detected spectrum. Should be larger than boundary for decay spectrum.
 #define DetUp 5 //Up boundary for detected spectrum.
+
+#define IsSynchrotron true //If true, use cyclotron radiation when calculating detector response.
+/* Enable or disable systematic uncertainties. */
 
 #include <iostream>
 #include <fstream>

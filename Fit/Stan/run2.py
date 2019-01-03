@@ -40,7 +40,9 @@ data['error'] = error
 
 # Configure Stan model and fitter.
 sm = pystan.StanModel(file='model.stan', includes=['Pred.h'], allow_undefined=True, include_dirs=['.'], verbose=False)
-fit = sm.sampling(data=data, sample_file = 'sample', iter=1000, warmup=600, chains=1)
+#fit = sm.optimizing(data=data)
+#print(fit)
+fit = sm.sampling(data=data, sample_file = 'sample2', iter=1000, warmup=600, chains=1, algorithm="HMC")
 print(fit.stansummary(digits_summary=4))
 print("95% upper limit: ")
 print(fit.summary(probs=(0.95,)))
