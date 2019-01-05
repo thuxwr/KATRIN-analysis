@@ -20,7 +20,7 @@
 #include <string>
 #include <iostream>
 #include "../Scattering/prob/ScatterProb.h"
-#include "../Scattering/energyloss/EngLoss.h"
+#include "../Scattering/energyloss/ScatEngLoss.h"
 #include "../Configure/Configure.h"
 #include "SSCTransmissionSynchrotron.h"
 #include "SSCWGTS.h"
@@ -86,7 +86,7 @@ class Response
 		}
 
 		void SetupResponse(double B_A, double B_S, double B_max) { // Construct a response function.
-			if(B_A==_B_A && B_S==_B_S && B_max==_B_max) return; // Avoid duplicated calculation.
+			//if(B_A==_B_A && B_S==_B_S && B_max==_B_max) return; // Avoid duplicated calculation.
 			_B_A = B_A; _B_S = B_S; _B_max = B_max;
 			delete response;
 			response = new TGraph();
@@ -113,12 +113,17 @@ class Response
 				for(int s=1; s<=3; s++) {
 					for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
 						double cosmax = GetCosMax(x-epsilon-0.5*binwidth);
-						ScatResponse += engloss.GetPdf(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
+						ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
 					}
 				}
 				response->SetPoint(npoint, x, UnscatResponse+ScatResponse);
 				npoint++;
 			}
+		}
+
+		void SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
+			engloss.SetupParameters(A1, A2, w1, w2, e1, e2);
+			scat.SetInelasCrossSection(InelasCS);
 		}
 
 		double GetResponse(double E, double U) {
@@ -129,7 +134,7 @@ class Response
 
 	private:
 		ScatterProb scat;
-		EngLoss engloss;
+		ScatEngLoss engloss;
 		KATRIN katrin;
 		TGraph* response;
 		SSCWGTS* myWGTS;

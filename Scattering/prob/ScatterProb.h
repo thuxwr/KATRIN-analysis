@@ -10,7 +10,7 @@
 #include <string>
 #include <iostream>
 
-#define CosThetaStep 0.001
+#define CosThetaStep 0.0001
 
 using namespace std;
 
@@ -50,16 +50,17 @@ class ScatterProb
 
 		/* Cumulated probability, integrated over theta. */
 		void SetProbCumulate(double z) {
+			_z = z;
 			for(int i=0; i<4; i++) delete CumulatePdf[i];
 			for(int s=0; s<4; s++) {
-				CumulatePdf[s] = new TGraph();
-				CumulatePdf[s]->SetPoint(0, 1, 0); // when cos(theta)=1, probability=0.
-				int npoint = 1;
+				int nbins = (int)(1./CosThetaStep);
+				CumulatePdf[s] = new TH1D("", "", nbins, 0, 1);
 				double cumulate = 0;
-				for(double x=1-CosThetaStep; x>0; x-=CosThetaStep) {
-					cumulate += CosThetaStep * GetProb(s, z, x+0.5*CosThetaStep);
-					CumulatePdf[s]->SetPoint(npoint, x, cumulate);
-					npoint++;
+				double binwidth = 1./nbins;
+				for(int bin=nbins; bin>0; bin--) {
+					double bincenter = CumulatePdf[s]->GetBinCenter(bin);
+					cumulate += binwidth * GetProb(s, _z, bincenter);
+					CumulatePdf[s]->SetBinContent(bin, cumulate);
 				}
 			}
 		}
@@ -69,19 +70,26 @@ class ScatterProb
 				cout << "Scatter times greater than three. Not supported." << endl;
 				return 0;
 			}
-			return CumulatePdf[s]->Eval(cosmax);
+			return CumulatePdf[s]->GetBinContent(CumulatePdf[s]->FindBin(cosmax));
 		}
+
+		void SetInelasCrossSection(double cs) { 
+			if(sigma==cs) return;
+			sigma = cs;
+			SetProbCumulate(_z);
+		} // in unit: cm^2
 
 	private:
 		TFile* file;
 		TH1D* dens;
-		TGraph* CumulatePdf[4]; // Pdf with variable epsilon, integrated over theta.
+		TH1D* CumulatePdf[4]; // Pdf with variable epsilon, integrated over theta.
 
 		double tmpz;
 		double integ;
 		double calib;
 		double Ncalib;
 		double sigma; //Elastic: 0.29e-18; Inelastic: 3.4e-18.
+		double _z;
 
 		double Neff(double z, double cos_theta) {
 			if(z!=tmpz) {

@@ -25,6 +25,7 @@ class Detect
 			InitTrans(katrin.bv, katrin.T_bt);
 			_mass = -1;
 			_endpoint = 0;
+			broadenspec = new TH1D;
 			//response.SetZ(z);
 			//response.SetSlice(50);
 		}
@@ -44,6 +45,10 @@ class Detect
 			_B_max = B_max;
 		}
 
+		void SetScatParams(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
+			_A1 = A1; _A2 = A2; _w1 = w1; _w2 = w2; _e1 = e1; _e2 = e2; _InelasCS = InelasCS;
+		}
+
 		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
 			if(mass!=_mass || endpoint!=_endpoint) {
 				delete broadenspec;
@@ -53,6 +58,7 @@ class Detect
 			}
 
 			double* detspec = new double[nvoltage];
+			response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 			response.SetupResponse(_B_A, _B_S, _B_max);
 
 			/* Normalization. */
@@ -94,6 +100,7 @@ class Detect
 		TH1D* broadenspec;
 		double _mass, _endpoint;
 		double _B_A, _B_S, _B_max;
+		double _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS;
 
 		double sigma_E(double E_cms, double bv, double T_bt) {
 			return Sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);

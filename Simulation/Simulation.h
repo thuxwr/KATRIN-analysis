@@ -30,6 +30,11 @@ class Simulation
 			detect.SetMagnetic(B_A, B_S, B_max);
 		}
 
+		void SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
+			detect.SetScatParams(A1, A2, w1, w2, e1, e2, InelasCS);
+		}
+
+
 		double* Generate(double mass, double endpoint, int nvoltage, double* voltage, double* time, double A_sig=1, double A_bkg=1) {
 			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage);
 			double* sim = new double[nvoltage];
@@ -50,6 +55,20 @@ class Simulation
 			for(int n=0; n<nvoltage; n++) {
 				double signal = A_sig * theory[n];
 				double bkg = A_bkg * katrin.Bkg_rate;
+				double entries = signal + bkg;
+				asimov[n] = entries;
+			}
+			delete theory;
+			return asimov;
+		}
+
+		/* This one should be deleted. */
+		double* Asimov(double mass, double endpoint, int nvoltage, double* voltage, double* time, double A_sig=1, double A_bkg=1) { // For discrete data.
+			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage);
+			double* asimov = new double[nvoltage];
+			for(int n=0; n<nvoltage; n++) {
+				double signal = A_sig * theory[n] * time[n];
+				double bkg = A_bkg * katrin.Bkg_rate * time[n];
 				double entries = signal + bkg;
 				asimov[n] = entries;
 			}
