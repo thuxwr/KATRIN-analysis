@@ -27,6 +27,7 @@
 #include "SSCGeometry.h"
 #include "XMLInitialization.h"
 #include "KToolbox.h"
+#include "TGraph.h"
 
 #define Nslices 1 // number of source slices
 using namespace std;
@@ -107,7 +108,7 @@ class Response
 				npoint++;
 			}
 
-			double binwidth = 0.1;
+			double binwidth = 0.2;
 			for(double x=9.6; x<35; x+=binwidth) { // Should consider inelastic scattering.
 				double ScatResponse = 0;
 				for(int s=1; s<=3; s++) {
@@ -121,6 +122,8 @@ class Response
 			}
 		}
 
+		TGraph* GetResponse() { return response; }
+
 		void SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
 			engloss.SetupParameters(A1, A2, w1, w2, e1, e2);
 			scat.SetInelasCrossSection(InelasCS);
@@ -131,6 +134,13 @@ class Response
 			else return response->Eval(E-U);
 		}
 
+		double GetColumnDensity(int iSlice) {
+			return scat.GetColumnDensity(myWGTS->GetSlice(iSlice).GetCenterZ());
+		}
+
+		int GetNSlices() {
+			return myWGTS->GetNSlices();
+		}
 
 	private:
 		ScatterProb scat;

@@ -15,6 +15,7 @@
 #include <sstream>
 #include <fstream>
 #include "../Configure/Configure.h"
+#include "TH1D.h"
 
 using namespace std;
 using namespace Physics;

@@ -12,6 +12,7 @@
 #include "../Detect/Detect.h"
 #include "../Configure/Configure.h"
 #include "../Spectrum/Spectrum.h"
+#include "TRandom3.h"
 
 using namespace std;
 

@@ -9,6 +9,9 @@
 
 #include <string>
 #include <iostream>
+#include "TMath.h"
+#include "TFile.h"
+#include "TH1D.h"
 
 #define CosThetaStep 0.0001
 
@@ -78,6 +81,10 @@ class ScatterProb
 			sigma = cs;
 			SetProbCumulate(_z);
 		} // in unit: cm^2
+
+		double GetColumnDensity(double z) {
+			return dens->GetBinContent(dens->FindBin(abs(z)));
+		}
 
 	private:
 		TFile* file;

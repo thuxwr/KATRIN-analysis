@@ -8,6 +8,8 @@
 #define ScatEngLoss_h
 
 #include <iostream>
+#include "TH1D.h"
+#include "TVirtualFFT.h"
 
 using namespace std;
 using namespace TMath;
