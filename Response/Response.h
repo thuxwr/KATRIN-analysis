@@ -43,6 +43,8 @@ class Response
 			_B_max = 0;
 			tolerance = 1e-7;
 			response = new TGraph;
+			IsUpdate = false;
+			_slice = -1;
 		}
 
 		~Response() {
@@ -77,9 +79,11 @@ class Response
 		}
 
 		void SetSlice(int iSlice) {
+			if(iSlice==_slice) return;
+			_slice = iSlice;
 			trans->SetVoxel(&(myWGTS->GetVoxel(iSlice)));
-			scat.SetProbCumulate(myWGTS->GetSlice(iSlice).GetCenterZ());
 			data = &(trans->GetSynchrotronData());
+			IsUpdate = false;
 		}
 
 		double GetSyncEngLoss(double angle) {
@@ -87,8 +91,9 @@ class Response
 		}
 
 		void SetupResponse(double B_A, double B_S, double B_max) { // Construct a response function.
-			//if(B_A==_B_A && B_S==_B_S && B_max==_B_max) return; // Avoid duplicated calculation.
+			if(CheckUpdate(B_A, B_S, B_max)) return; // Avoid duplicated calculation.
 			_B_A = B_A; _B_S = B_S; _B_max = B_max;
+			if(!IsUpdate) scat.SetProbCumulate(myWGTS->GetSlice(_slice).GetCenterZ());
 			delete response;
 			response = new TGraph();
 			int npoint = 0;
@@ -111,22 +116,51 @@ class Response
 			double binwidth = 0.2;
 			for(double x=9.6; x<35; x+=binwidth) { // Should consider inelastic scattering.
 				double ScatResponse = 0;
-				for(int s=1; s<=3; s++) {
-					for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
-						double cosmax = GetCosMax(x-epsilon-0.5*binwidth);
+				for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
+					double cosmax = GetCosMax(x-epsilon-0.5*binwidth);
+					for(int s=1; s<=3; s++) {
 						ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
 					}
 				}
 				response->SetPoint(npoint, x, UnscatResponse+ScatResponse);
 				npoint++;
 			}
+			IsUpdate = true;
+		}
+
+		void SetupResponseTotal(double B_A, double B_S, double B_max) { //Multi-pixel structure, calculated with single core.
+			if(CheckUpdate(B_A, B_S, B_max)) return; // Avoid duplicated calculation.
+			SetSlice(0);
+			SetupResponse(B_A, B_S, B_max);
+			int npoints = GetResponse()->GetN();
+			int nslice = GetNSlices();
+			double TotDens = 0;
+			for(int i=0; i<nslice; i++) TotDens += GetColumnDensity(i);
+
+			double yvalue[npoints];
+			for(int i=0; i<npoints; i++) yvalue[i] = 0;
+			for(int i=0; i<nslice; i++) {
+				SetSlice(i);
+				SetupResponse(B_A, B_S, B_max);
+				double* y = GetResponse()->GetY();
+				double weight = GetColumnDensity(i)/TotDens;
+				for(int j=0; j<npoints; j++) yvalue[j] += y[j] * weight;
+			}
+			double xvalue[npoints];
+			double* x = GetResponse()->GetX();
+			for(int i=0; i<npoints; i++) xvalue[i] = x[i];
+			delete response;
+			response = new TGraph(npoints, xvalue, yvalue);
+			IsUpdate = true;
 		}
 
 		TGraph* GetResponse() { return response; }
 
-		void SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
-			engloss.SetupParameters(A1, A2, w1, w2, e1, e2);
-			scat.SetInelasCrossSection(InelasCS);
+		bool SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
+			bool IsSetup1 = engloss.SetupParameters(A1, A2, w1, w2, e1, e2);
+			bool IsSetup2 = scat.SetInelasCrossSection(InelasCS);
+			IsUpdate = !(IsSetup1 || IsSetup2);
+			return IsUpdate;
 		}
 
 		double GetResponse(double E, double U) {
@@ -142,6 +176,11 @@ class Response
 			return myWGTS->GetNSlices();
 		}
 
+		bool CheckUpdate(double B_A, double B_S, double B_max) {
+			if(B_A==_B_A && B_S==_B_S && B_max==_B_max && IsUpdate) return true;
+			return false;
+		}
+
 	private:
 		ScatterProb scat;
 		ScatEngLoss engloss;
@@ -155,6 +194,8 @@ class Response
 		double UnscatResponse;
 		double xmax;
 		double tolerance;
+		int _slice;
+		bool IsUpdate;
 
 		double gamma(double energy) {
 			return energy / m_e + 1;

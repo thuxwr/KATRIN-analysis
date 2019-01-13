@@ -12,6 +12,7 @@
 #include "../Spectrum/Spectrum.h"
 #include "../Configure/Configure.h"
 #include "../Response/Response.h"
+#include "TF1.h"
 
 using namespace std;
 using namespace Physics;
@@ -59,7 +60,7 @@ class Detect
 
 			double* detspec = new double[nvoltage];
 			response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
-			response.SetupResponse(_B_A, _B_S, _B_max);
+			response.SetupResponseTotal(_B_A, _B_S, _B_max);
 
 			/* Normalization. */
 			double scale;
@@ -88,6 +89,8 @@ class Detect
 
 		void initialize(int argc, char** argv) { response.initialize(argc, argv); }
 		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
+		double GetColumnDensity(int iSlice) { return response.GetColumnDensity(iSlice); }
+		int GetNSlices() {return response.GetNSlices(); }
 
 	private:
 		static Detect* detect;

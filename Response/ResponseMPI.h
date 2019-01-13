@@ -11,6 +11,7 @@
 #include "mpi.h"
 #include "TGraph.h"
 #include <unistd.h>
+#include <iomanip>
 
 class ResponseMPI 
 {
@@ -24,8 +25,8 @@ class ResponseMPI
 		}
 
 		void initialize(int argc, char** argv) { response.initialize(argc, argv); }
-		void SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
-			response.SetupScatParameters(A1, A2, w1, w2, e1, e2, InelasCS);
+		bool SetupScatParameters(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
+			return response.SetupScatParameters(A1, A2, w1, w2, e1, e2, InelasCS);
 		}
 		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
 
@@ -61,18 +62,19 @@ class ResponseMPI
 			if(slice==0) {
 				for(int i=0; i<npoints; i++) total_response[i] = local_response[i];
 				for(int source=1; source<nslice; source++) {
-					MPI_Recv(local_response, npoints, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					MPI_Recv(local_response, npoints, MPI_DOUBLE, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+					usleep(100000);
 					for(int i=0; i<npoints; i++) total_response[i] += local_response[i];
 				}
 				double* xvalue = slice_response->GetX();
 				gtotal_response = new TGraph(npoints, xvalue, total_response);
 			}
 			else {
-				MPI_Send(local_response, npoints, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+				MPI_Send(local_response, npoints, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
 				gtotal_response = new TGraph;
 			}
 
-			//delete[] local_response; delete[] total_response;
+			delete[] local_response; delete[] total_response;
 		}
 
 		double GetResponse(double E, double U) {

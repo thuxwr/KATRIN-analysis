@@ -1,0 +1,1 @@
+mpiexec -n 2 ./hehe sample num_warmup=2000 num_samples=600 save_warmup=1 algorithm=hmc engine=nuts max_depth=7 data file=data.R

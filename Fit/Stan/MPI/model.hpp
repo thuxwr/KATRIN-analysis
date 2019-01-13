@@ -18,7 +18,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model.stan");
-    reader.add_event(37, 35, "end", "model.stan");
+    reader.add_event(59, 57, "end", "model.stan");
     return reader;
 }
 
@@ -124,6 +124,20 @@ public:
             ++num_params_r__;
             current_statement_begin__ = 18;
             ++num_params_r__;
+            current_statement_begin__ = 19;
+            ++num_params_r__;
+            current_statement_begin__ = 20;
+            ++num_params_r__;
+            current_statement_begin__ = 21;
+            ++num_params_r__;
+            current_statement_begin__ = 22;
+            ++num_params_r__;
+            current_statement_begin__ = 23;
+            ++num_params_r__;
+            current_statement_begin__ = 24;
+            ++num_params_r__;
+            current_statement_begin__ = 25;
+            ++num_params_r__;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
             // Next line prevents compiler griping about no return
@@ -178,7 +192,7 @@ public:
         double A_sig(0);
         A_sig = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(-(10000),10000,A_sig);
+            writer__.scalar_lub_unconstrain(-(9000),9000,A_sig);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_sig: ") + e.what());
         }
@@ -204,7 +218,7 @@ public:
         double B_A(0);
         B_A = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(2.5,2.7999999999999998,B_A);
+            writer__.scalar_lub_unconstrain(2.6299999999999999,2.73,B_A);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable B_A: ") + e.what());
         }
@@ -217,9 +231,100 @@ public:
         double B_S(0);
         B_S = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(24600,26000,B_S);
+            writer__.scalar_lub_unconstrain(24950,25450,B_S);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable B_S: ") + e.what());
+        }
+
+        if (!(context__.contains_r("B_max")))
+            throw std::runtime_error("variable B_max missing");
+        vals_r__ = context__.vals_r("B_max");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "B_max", "double", context__.to_vec());
+        double B_max(0);
+        B_max = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(41500,42500,B_max);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable B_max: ") + e.what());
+        }
+
+        if (!(context__.contains_r("A1")))
+            throw std::runtime_error("variable A1 missing");
+        vals_r__ = context__.vals_r("A1");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "A1", "double", context__.to_vec());
+        double A1(0);
+        A1 = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(0.19900000000000001,0.20799999999999999,A1);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable A1: ") + e.what());
+        }
+
+        if (!(context__.contains_r("A2")))
+            throw std::runtime_error("variable A2 missing");
+        vals_r__ = context__.vals_r("A2");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "A2", "double", context__.to_vec());
+        double A2(0);
+        A2 = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(0.054100000000000002,0.057099999999999998,A2);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable A2: ") + e.what());
+        }
+
+        if (!(context__.contains_r("w1")))
+            throw std::runtime_error("variable w1 missing");
+        vals_r__ = context__.vals_r("w1");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "w1", "double", context__.to_vec());
+        double w1(0);
+        w1 = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(1.75,1.95,w1);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable w1: ") + e.what());
+        }
+
+        if (!(context__.contains_r("w2")))
+            throw std::runtime_error("variable w2 missing");
+        vals_r__ = context__.vals_r("w2");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "w2", "double", context__.to_vec());
+        double w2(0);
+        w2 = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(12,13,w2);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable w2: ") + e.what());
+        }
+
+        if (!(context__.contains_r("e2")))
+            throw std::runtime_error("variable e2 missing");
+        vals_r__ = context__.vals_r("e2");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "e2", "double", context__.to_vec());
+        double e2(0);
+        e2 = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(14.199999999999999,14.4,e2);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable e2: ") + e.what());
+        }
+
+        if (!(context__.contains_r("sigma")))
+            throw std::runtime_error("variable sigma missing");
+        vals_r__ = context__.vals_r("sigma");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "sigma", "double", context__.to_vec());
+        double sigma(0);
+        sigma = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(3.0499999999999998,3.75,sigma);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable sigma: ") + e.what());
         }
 
         params_r__ = writer__.data_r();
@@ -272,9 +377,9 @@ public:
             local_scalar_t__ A_sig;
             (void) A_sig;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_sig = in__.scalar_lub_constrain(-(10000),10000,lp__);
+                A_sig = in__.scalar_lub_constrain(-(9000),9000,lp__);
             else
-                A_sig = in__.scalar_lub_constrain(-(10000),10000);
+                A_sig = in__.scalar_lub_constrain(-(9000),9000);
 
             local_scalar_t__ A_bkg;
             (void) A_bkg;  // dummy to suppress unused var warning
@@ -286,16 +391,65 @@ public:
             local_scalar_t__ B_A;
             (void) B_A;  // dummy to suppress unused var warning
             if (jacobian__)
-                B_A = in__.scalar_lub_constrain(2.5,2.7999999999999998,lp__);
+                B_A = in__.scalar_lub_constrain(2.6299999999999999,2.73,lp__);
             else
-                B_A = in__.scalar_lub_constrain(2.5,2.7999999999999998);
+                B_A = in__.scalar_lub_constrain(2.6299999999999999,2.73);
 
             local_scalar_t__ B_S;
             (void) B_S;  // dummy to suppress unused var warning
             if (jacobian__)
-                B_S = in__.scalar_lub_constrain(24600,26000,lp__);
+                B_S = in__.scalar_lub_constrain(24950,25450,lp__);
             else
-                B_S = in__.scalar_lub_constrain(24600,26000);
+                B_S = in__.scalar_lub_constrain(24950,25450);
+
+            local_scalar_t__ B_max;
+            (void) B_max;  // dummy to suppress unused var warning
+            if (jacobian__)
+                B_max = in__.scalar_lub_constrain(41500,42500,lp__);
+            else
+                B_max = in__.scalar_lub_constrain(41500,42500);
+
+            local_scalar_t__ A1;
+            (void) A1;  // dummy to suppress unused var warning
+            if (jacobian__)
+                A1 = in__.scalar_lub_constrain(0.19900000000000001,0.20799999999999999,lp__);
+            else
+                A1 = in__.scalar_lub_constrain(0.19900000000000001,0.20799999999999999);
+
+            local_scalar_t__ A2;
+            (void) A2;  // dummy to suppress unused var warning
+            if (jacobian__)
+                A2 = in__.scalar_lub_constrain(0.054100000000000002,0.057099999999999998,lp__);
+            else
+                A2 = in__.scalar_lub_constrain(0.054100000000000002,0.057099999999999998);
+
+            local_scalar_t__ w1;
+            (void) w1;  // dummy to suppress unused var warning
+            if (jacobian__)
+                w1 = in__.scalar_lub_constrain(1.75,1.95,lp__);
+            else
+                w1 = in__.scalar_lub_constrain(1.75,1.95);
+
+            local_scalar_t__ w2;
+            (void) w2;  // dummy to suppress unused var warning
+            if (jacobian__)
+                w2 = in__.scalar_lub_constrain(12,13,lp__);
+            else
+                w2 = in__.scalar_lub_constrain(12,13);
+
+            local_scalar_t__ e2;
+            (void) e2;  // dummy to suppress unused var warning
+            if (jacobian__)
+                e2 = in__.scalar_lub_constrain(14.199999999999999,14.4,lp__);
+            else
+                e2 = in__.scalar_lub_constrain(14.199999999999999,14.4);
+
+            local_scalar_t__ sigma;
+            (void) sigma;  // dummy to suppress unused var warning
+            if (jacobian__)
+                sigma = in__.scalar_lub_constrain(3.0499999999999998,3.75,lp__);
+            else
+                sigma = in__.scalar_lub_constrain(3.0499999999999998,3.75);
 
 
             // transformed parameters
@@ -309,58 +463,61 @@ public:
 
             // model body
             {
-            current_statement_begin__ = 23;
-            validate_non_negative_index("pars", "4", 4);
-            vector<local_scalar_t__> pars(4);
+            current_statement_begin__ = 29;
+            local_scalar_t__ e1;
+            (void) e1;  // dummy to suppress unused var warning
+
+            stan::math::initialize(e1, DUMMY_VAR__);
+            stan::math::fill(e1,DUMMY_VAR__);
+            stan::math::assign(e1,12.6);
+            current_statement_begin__ = 30;
+            validate_non_negative_index("pars", "12", 12);
+            vector<local_scalar_t__> pars(12);
             stan::math::initialize(pars, DUMMY_VAR__);
             stan::math::fill(pars,DUMMY_VAR__);
-            stan::math::assign(pars,static_cast<std::vector<local_scalar_t__> >(stan::math::array_builder<local_scalar_t__ >().add(mass).add(endpoint).add(B_A).add(B_S).array()));
-            current_statement_begin__ = 24;
+            stan::math::assign(pars,static_cast<std::vector<local_scalar_t__> >(stan::math::array_builder<local_scalar_t__ >().add(mass).add(endpoint).add(B_A).add(B_S).add(B_max).add(A1).add(A2).add(w1).add(w2).add(e1).add(e2).add((sigma * 1.0000000000000001e-18)).array()));
+            current_statement_begin__ = 31;
             validate_non_negative_index("sig", "nbins", nbins);
             vector<local_scalar_t__> sig(nbins);
             stan::math::initialize(sig, DUMMY_VAR__);
             stan::math::fill(sig,DUMMY_VAR__);
             stan::math::assign(sig,signal(pars, pstream__));
-            current_statement_begin__ = 25;
+            current_statement_begin__ = 32;
             validate_non_negative_index("pred", "nbins", nbins);
             vector<local_scalar_t__> pred(nbins);
             stan::math::initialize(pred, DUMMY_VAR__);
             stan::math::fill(pred,DUMMY_VAR__);
-            current_statement_begin__ = 26;
-            validate_non_negative_index("par_std", "(nbins + 2)", (nbins + 2));
-            Eigen::Matrix<local_scalar_t__,Eigen::Dynamic,1>  par_std(static_cast<Eigen::VectorXd::Index>((nbins + 2)));
-            (void) par_std;  // dummy to suppress unused var warning
-
-            stan::math::initialize(par_std, DUMMY_VAR__);
-            stan::math::fill(par_std,DUMMY_VAR__);
 
 
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 34;
             for (int n = 1; n <= nbins; ++n) {
 
-                current_statement_begin__ = 28;
+                current_statement_begin__ = 35;
                 stan::model::assign(pred, 
                             stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
                             ((get_base1(sig,n,"sig",1) * ((A_sig * 0.0001) + 1)) + (A_bkg * bkg(pstream__))), 
                             "assigning variable pred");
-                current_statement_begin__ = 29;
-                stan::model::assign(par_std, 
-                            stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
-                            ((get_base1(rate,n,"rate",1) - get_base1(pred,n,"pred",1)) / get_base1(error,n,"error",1)), 
-                            "assigning variable par_std");
             }
-            current_statement_begin__ = 31;
-            stan::model::assign(par_std, 
-                        stan::model::cons_list(stan::model::index_uni((nbins + 1)), stan::model::nil_index_list()), 
-                        ((B_A - 2.6800000000000002) / 0.01), 
-                        "assigning variable par_std");
-            current_statement_begin__ = 32;
-            stan::model::assign(par_std, 
-                        stan::model::cons_list(stan::model::index_uni((nbins + 2)), stan::model::nil_index_list()), 
-                        ((B_S - 25200.0) / 50), 
-                        "assigning variable par_std");
-            current_statement_begin__ = 33;
-            lp_accum__.add(normal_log<propto__>(par_std, 0, 1));
+            current_statement_begin__ = 40;
+            lp_accum__.add(normal_log<propto__>(rate, pred, error));
+            current_statement_begin__ = 41;
+            lp_accum__.add(normal_log<propto__>(B_A, 2.6800000000000002, 0.01));
+            current_statement_begin__ = 42;
+            lp_accum__.add(normal_log<propto__>(B_S, 25200.0, 50));
+            current_statement_begin__ = 43;
+            lp_accum__.add(normal_log<propto__>(B_max, 42000.0, 100));
+            current_statement_begin__ = 44;
+            lp_accum__.add(normal_log<propto__>(A1, 0.20399999999999999, 0.001));
+            current_statement_begin__ = 45;
+            lp_accum__.add(normal_log<propto__>(A2, 0.055599999999999997, 0.00029999999999999997));
+            current_statement_begin__ = 46;
+            lp_accum__.add(normal_log<propto__>(w1, 1.8500000000000001, 0.02));
+            current_statement_begin__ = 47;
+            lp_accum__.add(normal_log<propto__>(w2, 12.5, 0.10000000000000001));
+            current_statement_begin__ = 48;
+            lp_accum__.add(normal_log<propto__>(e2, 14.300000000000001, 0.02));
+            current_statement_begin__ = 49;
+            lp_accum__.add(normal_log<propto__>(sigma, 3.3999999999999999, 0.070000000000000007));
             }
 
         } catch (const std::exception& e) {
@@ -394,12 +551,33 @@ public:
         names__.push_back("A_bkg");
         names__.push_back("B_A");
         names__.push_back("B_S");
+        names__.push_back("B_max");
+        names__.push_back("A1");
+        names__.push_back("A2");
+        names__.push_back("w1");
+        names__.push_back("w2");
+        names__.push_back("e2");
+        names__.push_back("sigma");
     }
 
 
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
         std::vector<size_t> dims__;
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -431,16 +609,30 @@ public:
         // read-transform, write parameters
         double mass = in__.scalar_lub_constrain(0,10);
         double endpoint = in__.scalar_lub_constrain(18564,18584);
-        double A_sig = in__.scalar_lub_constrain(-(10000),10000);
+        double A_sig = in__.scalar_lub_constrain(-(9000),9000);
         double A_bkg = in__.scalar_lub_constrain(0.80000000000000004,1.2);
-        double B_A = in__.scalar_lub_constrain(2.5,2.7999999999999998);
-        double B_S = in__.scalar_lub_constrain(24600,26000);
+        double B_A = in__.scalar_lub_constrain(2.6299999999999999,2.73);
+        double B_S = in__.scalar_lub_constrain(24950,25450);
+        double B_max = in__.scalar_lub_constrain(41500,42500);
+        double A1 = in__.scalar_lub_constrain(0.19900000000000001,0.20799999999999999);
+        double A2 = in__.scalar_lub_constrain(0.054100000000000002,0.057099999999999998);
+        double w1 = in__.scalar_lub_constrain(1.75,1.95);
+        double w2 = in__.scalar_lub_constrain(12,13);
+        double e2 = in__.scalar_lub_constrain(14.199999999999999,14.4);
+        double sigma = in__.scalar_lub_constrain(3.0499999999999998,3.75);
         vars__.push_back(mass);
         vars__.push_back(endpoint);
         vars__.push_back(A_sig);
         vars__.push_back(A_bkg);
         vars__.push_back(B_A);
         vars__.push_back(B_S);
+        vars__.push_back(B_max);
+        vars__.push_back(A1);
+        vars__.push_back(A2);
+        vars__.push_back(w1);
+        vars__.push_back(w2);
+        vars__.push_back(e2);
+        vars__.push_back(sigma);
 
         // declare and define transformed parameters
         double lp__ = 0.0;
@@ -519,6 +711,27 @@ public:
         param_name_stream__.str(std::string());
         param_name_stream__ << "B_S";
         param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "B_max";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "A1";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "A2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "w1";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "w2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "e2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigma";
+        param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__ && !include_tparams__) return;
 
@@ -551,6 +764,27 @@ public:
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
         param_name_stream__ << "B_S";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "B_max";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "A1";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "A2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "w1";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "w2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "e2";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
+        param_name_stream__ << "sigma";
         param_names__.push_back(param_name_stream__.str());
 
         if (!include_gqs__ && !include_tparams__) return;

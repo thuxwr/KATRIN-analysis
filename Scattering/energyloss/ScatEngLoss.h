@@ -33,8 +33,8 @@ class ScatEngLoss
 		~ScatEngLoss() {
 		}
 
-		void SetupParameters(double A1, double A2, double w1, double w2, double e1, double e2) {
-			if(_A1==A1 && _A2==A2 && _w1==w1 && _w2==w2 && _e1==e1 && _e2==e2 ) return;
+		bool SetupParameters(double A1, double A2, double w1, double w2, double e1, double e2) {
+			if(_A1==A1 && _A2==A2 && _w1==w1 && _w2==w2 && _e1==e1 && _e2==e2 ) return false;
 			_A1 = A1; _A2 = A2; _w1 = w1; _w2 = w2; _e1 = e1; _e2 = e2;
 			for(int i=0; i<3; i++) delete pdf[i];
 
@@ -86,6 +86,7 @@ class ScatEngLoss
 			delete[] scat2_re; delete[] scat2_im; delete[] scat3_re; delete[] scat3_im;
 			for(int i=1; i<3; i++) delete[] pdfvalue[i];
 			delete[] pdfvalue;
+			return true;
 		}
 
 		void SetNPoints(int n) { npoints = n; }

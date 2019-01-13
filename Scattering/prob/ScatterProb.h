@@ -37,6 +37,7 @@ class ScatterProb
 			int up = dens->FindBin(5); //Width of WGTS is 10m.
 			calib = dens->Integral(low, up);
 			sigma = 3.4e-18;
+			IsUpdate = false;
 		}
 
 		~ScatterProb() {
@@ -52,7 +53,8 @@ class ScatterProb
 		}
 
 		/* Cumulated probability, integrated over theta. */
-		void SetProbCumulate(double z) {
+		bool SetProbCumulate(double z) {
+			if(_z==z && IsUpdate) return false;
 			_z = z;
 			for(int i=0; i<4; i++) delete CumulatePdf[i];
 			for(int s=0; s<4; s++) {
@@ -66,6 +68,8 @@ class ScatterProb
 					CumulatePdf[s]->SetBinContent(bin, cumulate);
 				}
 			}
+			IsUpdate = true;
+			return true;
 		}
 
 		double GetProbCumulate(int s, double cosmax) { // for s<=3.
@@ -73,13 +77,24 @@ class ScatterProb
 				cout << "Scatter times greater than three. Not supported." << endl;
 				return 0;
 			}
-			return CumulatePdf[s]->GetBinContent(CumulatePdf[s]->FindBin(cosmax));
+			if(!IsUpdate) SetProbCumulate(_z);
+
+			int bin1 = CumulatePdf[s]->FindBin(cosmax);
+			double x1 = CumulatePdf[s]->GetBinCenter(bin1);
+			double y1 = CumulatePdf[s]->GetBinContent(bin1);
+			int bin2;
+			if(cosmax>x1) bin2 = bin1+1;
+			else bin2 = bin1-1;
+			double x2 = CumulatePdf[s]->GetBinCenter(bin2);
+			double y2 = CumulatePdf[s]->GetBinContent(bin2);
+			return (y2*(cosmax-x1) + y1*(x2-cosmax)) / (x2-x1);
 		}
 
-		void SetInelasCrossSection(double cs) { 
-			if(sigma==cs) return;
+		bool SetInelasCrossSection(double cs) { 
+			if(sigma==cs) return false;
 			sigma = cs;
-			SetProbCumulate(_z);
+			IsUpdate = false;
+			return true;
 		} // in unit: cm^2
 
 		double GetColumnDensity(double z) {
@@ -97,6 +112,7 @@ class ScatterProb
 		double Ncalib;
 		double sigma; //Elastic: 0.29e-18; Inelastic: 3.4e-18.
 		double _z;
+		bool IsUpdate;
 
 		double Neff(double z, double cos_theta) {
 			if(z!=tmpz) {

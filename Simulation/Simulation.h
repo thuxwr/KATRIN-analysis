@@ -20,7 +20,7 @@ class Simulation
 {
 	public:
 		Simulation() {
-			rndm = new TRandom3();
+			rndm = new TRandom3(0);
 		}
 
 		~Simulation() {
@@ -79,6 +79,8 @@ class Simulation
 
 		void initialize(int argc, char** argv) { detect.initialize(argc, argv); }
 		void SetSlice(int iSlice) { detect.SetSlice(iSlice); }
+		double GetColumnDensity(int iSlice) { return detect.GetColumnDensity(iSlice); }
+		int GetNSlices() { return detect.GetNSlices(); }
 
 	private:
 		KATRIN katrin;

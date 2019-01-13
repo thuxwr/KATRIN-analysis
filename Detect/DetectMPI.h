@@ -5,8 +5,8 @@
 	 Weiran, Nov.16, 2018.
 */
 
-#ifndef Detect_h
-#define Detect_h
+#ifndef DetectMPI_h
+#define DetectMPI_h
 
 #include <iostream>
 #include "../Spectrum/Spectrum.h"
@@ -42,6 +42,7 @@ class DetectMPI
 		}
 
 		void SetMagnetic(double B_A, double B_S, double B_max) {
+			IsUpdate = IsUpdate && (_B_A==B_A) && (_B_S==B_S) && (_B_max==B_max);
 			_B_A = B_A;
 			_B_S = B_S;
 			_B_max = B_max;
@@ -49,7 +50,7 @@ class DetectMPI
 
 		void SetScatParams(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
 			_A1 = A1; _A2 = A2; _w1 = w1; _w2 = w2; _e1 = e1; _e2 = e2; _InelasCS = InelasCS;
-			response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
+			IsUpdate = IsUpdate && response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 		}
 
 		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
@@ -71,10 +72,12 @@ class DetectMPI
 			}
 
 			/* Send all parameters to other cores. */
-			double pars[10] = {_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
-			for(int i=1; i<size; i++) MPI_Send(pars, 10, MPI_DOUBLE, i, 0, MPI_COMM_WORLD);
-			response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
-			response.SetupResponse(_B_A, _B_S, _B_max);
+			if(!IsUpdate) {
+				double pars[10] = {_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
+				for(int i=1; i<size; i++) MPI_Send(pars, 10, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+				response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
+				response.SetupResponse(_B_A, _B_S, _B_max);
+			}
 
 			/* Normalization. */
 			double scale;
@@ -98,12 +101,19 @@ class DetectMPI
 				detspec[n] = content * scale;
 			}
 
+			IsUpdate = true;
 			return detspec;
 		}
 
 		void initialize(int argc, char** argv) { response.initialize(argc, argv); }
 		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
-		void SetupResponse(double B_A, double B_S, double B_max) { response.SetupResponse(B_A, B_S, B_max); }
+
+		void AssociateRun() {
+			double pars[10];
+			MPI_Recv(pars, 10, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			response.SetupScatParameters(pars[0], pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
+			response.SetupResponse(pars[7], pars[8], pars[9]);
+		}
 
 	private:
 		static DetectMPI* detect;
@@ -117,6 +127,7 @@ class DetectMPI
 		double _mass, _endpoint;
 		double _B_A, _B_S, _B_max;
 		double _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS;
+		bool IsUpdate;
 
 		double sigma_E(double E_cms, double bv, double T_bt) {
 			return Sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);

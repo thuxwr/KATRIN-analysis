@@ -2,14 +2,14 @@
 	 Generate sample and print to file. The purpose is to provide an interface with python.
 
 	 Weiran, Dec.3, 2018.
+
+	 Add multi-slice structure.
+	 Jan.11, 2019.
 */
 
 #include "TH1D.h"
 #include "TMath.h"
-#include "TRandom3.h"
 #include "TFile.h"
-#include "TGraph.h"
-#include "TF1.h"
 #include "Simulation.h"
 #include "../Configure/Configure.h"
 #include <iostream>
@@ -18,7 +18,7 @@
 #include <iomanip>
 
 using namespace std;
-KATRIN katrin;
+KATRIN Katrin;
 Simulation sim;
 
 int main(int argc, char** argv) {
@@ -31,16 +31,18 @@ int main(int argc, char** argv) {
 	double endpoint;
 	ss2 >> endpoint;
 
-	sim.SetMagnetic(katrin.B_A, katrin.B_S, katrin.B_max);
-	double* sample = sim.Generate(mass, endpoint, katrin.Nbins, katrin.Voltage, katrin.Time);
+	sim.initialize(argc, argv);
+	sim.SetupScatParameters(0.204, 0.0556, 1.85, 12.5, 12.6, 14.3, 3.4e-18);
+	sim.SetMagnetic(Katrin.B_A, Katrin.B_S, Katrin.B_max);
+	double* sample = sim.Generate(mass, endpoint, Katrin.Nbins, Katrin.Voltage, Katrin.Time);
 
 	char* KATRINpath = getenv("KATRIN");
 	string path = KATRINpath;
 	string filepath = path + "/Data/sample.dat";
 	ofstream fout(filepath.c_str());
 	fout << "# Voltage/V    Count               Time/s" << endl;
-	for(int i=0; i<katrin.Nbins; i++) {
-		fout << left << setw(15) << katrin.Voltage[i] << setw(20) << sample[i] << setw(20) << katrin.Time[i] << endl;
+	for(int i=0; i<Katrin.Nbins; i++) {
+		fout << left << setw(15) << Katrin.Voltage[i] << setw(20) << sample[i] << setw(20) << Katrin.Time[i] << endl;
 	}
 
 	fout.close();

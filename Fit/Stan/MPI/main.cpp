@@ -13,7 +13,6 @@ int main(int argc, const char* argv[]) {
 	strcpy(Argv, argv[0]);
 	detect.initialize(argc, &Argv);
 	int rank, size;
-	double* pars = new double[10];
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	if(rank==0) { //root process
@@ -26,9 +25,7 @@ int main(int argc, const char* argv[]) {
 	}
 	else {
 		while(true) {
-			MPI_Recv(pars, 10, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			detect.SetScatParams(pars[0], pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
-			detect.SetupResponse(pars[7], pars[8], pars[9]);
+			detect.AssociateRun();
 		}
 	}
 	return 0;

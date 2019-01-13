@@ -20,13 +20,13 @@ for line in open(KATRINpath+'/Data/sample.dat'):
     error.append(math.sqrt(entries[-1])/Time[-1])
 
 # Dump into R format
-f = open("data.R", "r+")
+f = open("data.R", "w+")
 f.write("nbins <- \n")
 f.write("\t%d\n"%len(rate))
 f.write("rate <- \n")
 f.write("\tc(")
 for i in range(len(rate)):
-    f.write("%f"%(rate[i]))
+    f.write("%.12f"%(rate[i]))
     if i != len(rate)-1:
         f.write(",")
 
@@ -34,7 +34,7 @@ f.write(")\n")
 f.write("error <- \n")
 f.write("\tc(")
 for i in range(len(error)):
-    f.write("%f"%(error[i]))
+    f.write("%.12f"%(error[i]))
     if i != len(error)-1:
         f.write(",")
 
