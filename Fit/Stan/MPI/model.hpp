@@ -166,7 +166,7 @@ public:
         double mass(0);
         mass = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0,10,mass);
+            writer__.scalar_lub_unconstrain(0,2,mass);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable mass: ") + e.what());
         }
@@ -179,7 +179,7 @@ public:
         double endpoint(0);
         endpoint = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(18564,18584,endpoint);
+            writer__.scalar_lub_unconstrain(18572,18576,endpoint);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable endpoint: ") + e.what());
         }
@@ -192,7 +192,7 @@ public:
         double A_sig(0);
         A_sig = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(-(9000),9000,A_sig);
+            writer__.scalar_lub_unconstrain(-(1000),1000,A_sig);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_sig: ") + e.what());
         }
@@ -205,7 +205,7 @@ public:
         double A_bkg(0);
         A_bkg = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0.80000000000000004,1.2,A_bkg);
+            writer__.scalar_lub_unconstrain(0.90000000000000002,1.1000000000000001,A_bkg);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_bkg: ") + e.what());
         }
@@ -363,30 +363,30 @@ public:
             local_scalar_t__ mass;
             (void) mass;  // dummy to suppress unused var warning
             if (jacobian__)
-                mass = in__.scalar_lub_constrain(0,10,lp__);
+                mass = in__.scalar_lub_constrain(0,2,lp__);
             else
-                mass = in__.scalar_lub_constrain(0,10);
+                mass = in__.scalar_lub_constrain(0,2);
 
             local_scalar_t__ endpoint;
             (void) endpoint;  // dummy to suppress unused var warning
             if (jacobian__)
-                endpoint = in__.scalar_lub_constrain(18564,18584,lp__);
+                endpoint = in__.scalar_lub_constrain(18572,18576,lp__);
             else
-                endpoint = in__.scalar_lub_constrain(18564,18584);
+                endpoint = in__.scalar_lub_constrain(18572,18576);
 
             local_scalar_t__ A_sig;
             (void) A_sig;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_sig = in__.scalar_lub_constrain(-(9000),9000,lp__);
+                A_sig = in__.scalar_lub_constrain(-(1000),1000,lp__);
             else
-                A_sig = in__.scalar_lub_constrain(-(9000),9000);
+                A_sig = in__.scalar_lub_constrain(-(1000),1000);
 
             local_scalar_t__ A_bkg;
             (void) A_bkg;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_bkg = in__.scalar_lub_constrain(0.80000000000000004,1.2,lp__);
+                A_bkg = in__.scalar_lub_constrain(0.90000000000000002,1.1000000000000001,lp__);
             else
-                A_bkg = in__.scalar_lub_constrain(0.80000000000000004,1.2);
+                A_bkg = in__.scalar_lub_constrain(0.90000000000000002,1.1000000000000001);
 
             local_scalar_t__ B_A;
             (void) B_A;  // dummy to suppress unused var warning
@@ -607,10 +607,10 @@ public:
         static const char* function__ = "KATRIN_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double mass = in__.scalar_lub_constrain(0,10);
-        double endpoint = in__.scalar_lub_constrain(18564,18584);
-        double A_sig = in__.scalar_lub_constrain(-(9000),9000);
-        double A_bkg = in__.scalar_lub_constrain(0.80000000000000004,1.2);
+        double mass = in__.scalar_lub_constrain(0,2);
+        double endpoint = in__.scalar_lub_constrain(18572,18576);
+        double A_sig = in__.scalar_lub_constrain(-(1000),1000);
+        double A_bkg = in__.scalar_lub_constrain(0.90000000000000002,1.1000000000000001);
         double B_A = in__.scalar_lub_constrain(2.6299999999999999,2.73);
         double B_S = in__.scalar_lub_constrain(24950,25450);
         double B_max = in__.scalar_lub_constrain(41500,42500);

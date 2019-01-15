@@ -10,10 +10,10 @@ data {
 }
 
 parameters {
-	real<lower=0, upper=10> mass;
-	real<lower=18564, upper=18584> endpoint;
-	real<lower=-9000, upper=9000> A_sig;
-	real<lower=0.8, upper=1.2> A_bkg;
+	real<lower=0, upper=2> mass;
+	real<lower=18572, upper=18576> endpoint;
+	real<lower=-1000, upper=1000> A_sig;
+	real<lower=0.9, upper=1.1> A_bkg;
 	real<lower=2.63, upper=2.73> B_A;
 	real<lower=24950, upper=25450> B_S;
 	real<lower=41500, upper=42500> B_max;

@@ -74,7 +74,8 @@ class DetectMPI
 			/* Send all parameters to other cores. */
 			if(!IsUpdate) {
 				double pars[10] = {_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
-				for(int i=1; i<size; i++) MPI_Send(pars, 10, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+				//for(int i=1; i<size; i++) MPI_Send(pars, 10, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
+				MPI_Bcast(pars, 10, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 				response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 				response.SetupResponse(_B_A, _B_S, _B_max);
 			}
@@ -110,7 +111,8 @@ class DetectMPI
 
 		void AssociateRun() {
 			double pars[10];
-			MPI_Recv(pars, 10, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			//MPI_Recv(pars, 10, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+			MPI_Bcast(pars, 10, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 			response.SetupScatParameters(pars[0], pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
 			response.SetupResponse(pars[7], pars[8], pars[9]);
 		}

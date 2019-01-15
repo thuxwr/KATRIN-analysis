@@ -53,15 +53,16 @@ class Response
 		void initialize(int argc, char** argv) {
 			if(IsSynchrotron) {
 				/* Setup synchrotron transmission from Kasper. */
-				char* KASPER_path = getenv("KASPERSYS");
-				if(KASPER_path==0) {
+				string KASPER_path = getenv("KASPERSYS");
+				if(KASPER_path=="") {
 					cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
 					exit(0);
 				}
 				if(true) { //Always use SSC setup.
 					char** input = new char*[2];
 					input[0] = argv[0];
-					input[1] = (char*)(((string)KASPER_path + "/config/SSC/ssc.xml").data());
+					KASPER_path += "/config/SSC/ssc.xml";
+					input[1] = (char*)(KASPER_path.data());
 					Initialize(2, input);
 					myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
 					myWGTS->Initialize();

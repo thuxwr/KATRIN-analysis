@@ -59,20 +59,23 @@ class ResponseMPI
 			for(int i=0; i<npoints; i++) local_response[i] = yvalue[i] * weight; 
 
 			/* Send to first core. */
+			MPI_Reduce(local_response, total_response, npoints, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 			if(slice==0) {
+				/* Change Send&Recv to Reduce.
 				for(int i=0; i<npoints; i++) total_response[i] = local_response[i];
 				for(int source=1; source<nslice; source++) {
 					MPI_Recv(local_response, npoints, MPI_DOUBLE, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					usleep(100000);
 					for(int i=0; i<npoints; i++) total_response[i] += local_response[i];
 				}
+				*/
 				double* xvalue = slice_response->GetX();
 				gtotal_response = new TGraph(npoints, xvalue, total_response);
 			}
 			else {
-				MPI_Send(local_response, npoints, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
+				//MPI_Send(local_response, npoints, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
 				gtotal_response = new TGraph;
 			}
+			MPI_Barrier(MPI_COMM_WORLD);
 
 			delete[] local_response; delete[] total_response;
 		}
