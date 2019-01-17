@@ -40,13 +40,13 @@ class ResponseMPI
 				cout << "Number of cores is not in accordance with number of WGTS slices. Please use " << nslice << " cores to run again." << endl;
 				exit(0);
 			}
-			double TotDens = 0;
-			for(int i=0; i<nslice; i++) TotDens += response.GetColumnDensity(i);
+			double TotN = 0;
+			for(int i=0; i<nslice; i++) TotN += response.GetColumnDensity(i) * response.GetTotalA(i);
 
 			int slice;
 			MPI_Comm_rank(MPI_COMM_WORLD, &slice);
-			double density = response.GetColumnDensity(slice);
-			double weight = density/TotDens;
+			double sliceN = response.GetColumnDensity(slice) * response.GetTotalA(slice);
+			double weight = sliceN/TotN;
 
 			response.SetSlice(slice);
 			response.SetupResponse(B_A, B_S, B_max);

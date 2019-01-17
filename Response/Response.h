@@ -101,10 +101,18 @@ class Response
 
 			/* For epsilon in filter width, more points are given. */
 			double width = _B_A / _B_max * katrin.E_0_center * (gamma(katrin.E_0_center) + 1) / 2.;
+			double totalA = GetTotalA(_slice);
 
 			for(double x=0; x<=width; x+=0.01) { // Inside filter width, no inelastic scattering.
-				double cosmax = GetCosMax(x);
-				UnscatResponse = scat.GetProbCumulate(0, cosmax);
+				UnscatResponse = 0;
+				for(int ring=0; ring<NRings; ring++) {
+					/* Reset magnetic field for each ring. */
+					_B_A = B_A + katrin.BOffset[ring];
+					double voltage = x + katrin.EOffset[ring]; 
+					double cosmax = GetCosMax(voltage);
+					UnscatResponse += scat.GetProbCumulate(0, cosmax) * GetRingA(_slice, ring);
+				}
+				UnscatResponse /= totalA;
 				response->SetPoint(npoint, x, UnscatResponse);
 				npoint++;
 			}
@@ -118,14 +126,20 @@ class Response
 			for(double x=9.6; x<35; x+=binwidth) { // Should consider inelastic scattering.
 				double ScatResponse = 0;
 				for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
-					double cosmax = GetCosMax(x-epsilon-0.5*binwidth);
-					for(int s=1; s<=3; s++) {
-						ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
+					for(int ring=0; ring<NRings; ring++) {
+						_B_A = B_A + katrin.BOffset[ring];
+						double voltage = x + katrin.EOffset[ring];
+						double cosmax = GetCosMax(voltage-epsilon-0.5*binwidth);
+						for(int s=1; s<=3; s++) {
+							ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth * GetRingA(_slice, ring);
+						}
 					}
 				}
+				ScatResponse /= totalA;
 				response->SetPoint(npoint, x, UnscatResponse+ScatResponse);
 				npoint++;
 			}
+			_B_A = B_A;
 			IsUpdate = true;
 		}
 
@@ -175,6 +189,21 @@ class Response
 
 		int GetNSlices() {
 			return myWGTS->GetNSlices();
+		}
+
+		double GetTotalA(int iSlice) {
+			double total = 0;
+			SSCSlice& myslice = myWGTS->GetSlice(iSlice);
+			for(int ring=0; ring<myslice.GetNRings(); ring++) {
+				SSCRing& myring = myslice.GetRing(ring);
+				total += myring.GetSegment(0).GetA() * myring.GetNSegments();
+			}
+			return total;
+		}
+
+		double GetRingA(int iSlice, int iRing) {
+			SSCRing& myring = myWGTS->GetSlice(iSlice).GetRing(iRing);
+			return myring.GetNSegments() * myring.GetSegment(0).GetA();
 		}
 
 		bool CheckUpdate(double B_A, double B_S, double B_max) {

@@ -16,6 +16,8 @@
 #define DetLow -30 //Low boundary for detected spectrum. Should be larger than boundary for decay spectrum.
 #define DetUp 5 //Up boundary for detected spectrum.
 
+#define NRings 13
+
 #define IsSynchrotron true //If true, use cyclotron radiation when calculating detector response.
 /* Enable or disable systematic uncertainties. */
 
@@ -104,6 +106,10 @@ class KATRIN
 		/* Expected signal rate and background rate, for Monte Carlo generation. */
 		double Sig_rate = 27.54; // For U=18544.25V, 27.54Hz
 		double Bkg_rate = 10e-3; // 10mHz
+
+		/* Offset for electrostatic potential and magnetic field in analyzing plane. */
+		double EOffset[NRings] = {0, -0.034, -0.080, -0.122, -0.161, -0.198, -0.233,-0.266, -0.297, -0.326, -0.354, -0.379, -0.403}; // in unit: V
+		double BOffset[NRings] = {0, -8e-4, -18e-4, -26e-4, -32e-4, -36e-4, -39e-4, -40e-4, -39e-4, -37e-4, -33e-4, -27e-4, -19e-4}; //in unit: Gauss
 
 };
 
