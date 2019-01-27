@@ -31,26 +31,67 @@ class Spectrum
 				exit(0);
 			}
 
-			ifstream data(((string)KATRINpath + "/Spectrum/finalstate.dat").c_str());
+			string path = (string)KATRINpath + "/data/SSC/";
+
+			/* T2 data. */
+			{
+			ifstream data((path + "FSD_DOSS_T2_rebinned.txt").c_str());
 			if(!(data.is_open())) {
-				cout << "Data file $KATRIN/Spectrum/finalstate.dat cannot be opened." << endl;
+				cout << "Data file $KATRIN/data/SSC/FSD_DOSS_T2_rebinned.txt cannot be opened." << endl;
 				exit(0);
 			}
 
 			string line;
 			int nfinalstate = 0;
-			while(true) {
-				getline(data, line);
-				char f = line[0];
-				if(f=='#') continue;
+			while(getline(data, line)) {
+				//char f = line[0];
+				//if(f=='#') continue;
 				istringstream iss(line);
-				iss >> fsenergy[nfinalstate] >> fsprob[nfinalstate];
+				iss >> fsenergyT2[nfinalstate] >> fsprobT2[nfinalstate];
 				nfinalstate += 1;
-				if(nfinalstate >= Nfinalstate) break;
+			}
+			nfsT2 = nfinalstate;
 			}
 
-			/* */
+			/* DT data. */
+			{
+			ifstream data((path + "FSD_DOSS_DT_rebinned.txt").c_str());
+			if(!(data.is_open())) {
+				cout << "Data file $KATRIN/data/SSC/FSD_DOSS_DT_rebinned.txt cannot be opened." << endl;
+				exit(0);
+			}
 
+			string line;
+			int nfinalstate = 0;
+			while(getline(data, line)) {
+				//char f = line[0];
+				//if(f=='#') continue;
+				istringstream iss(line);
+				iss >> fsenergyDT[nfinalstate] >> fsprobDT[nfinalstate];
+				nfinalstate += 1;
+			}
+			nfsDT = nfinalstate;
+			}
+
+			/* HT data. */
+			{
+			ifstream data((path + "FSD_Saenz_HTmod.txt").c_str());
+			if(!(data.is_open())) {
+				cout << "Data file $KATRIN/data/SSC/FSD_Saenz_HTmod.txt cannot be opened." << endl;
+				exit(0);
+			}
+
+			string line;
+			int nfinalstate = 0;
+			while(getline(data, line)) {
+				//char f = line[0];
+				//if(f=='#') continue;
+				istringstream iss(line);
+				iss >> fsenergyHT[nfinalstate] >> fsprobHT[nfinalstate];
+				nfinalstate += 1;
+			}
+			nfsHT = nfinalstate;
+			}
 		}
 		~Spectrum(){}
 
@@ -78,8 +119,13 @@ class Spectrum
 
 
 	private:
-		double fsenergy[Nfinalstate]; //Final state energy for T2 
-		double fsprob[Nfinalstate]; //Final state prob for T2
+		double fsenergyT2[NfinalstateMAX]; //Final state energy for T2 
+		double fsprobT2[NfinalstateMAX]; //Final state prob for T2
+		double fsenergyDT[NfinalstateMAX];
+		double fsprobDT[NfinalstateMAX];
+		double fsenergyHT[NfinalstateMAX];
+		double fsprobHT[NfinalstateMAX];
+		int nfsT2, nfsDT, nfsHT;
 		KATRIN katrin;
 
 		/* Some useful functions. */
@@ -128,15 +174,42 @@ class Spectrum
 		/* Shape. */
 		double shape_fcn(double x, double ms, double E_0) {
 			double shape = 0;
-			for(int i=0; i<Nfinalstate; i++) {
-				double Epsilon = epsilon(x, fsenergy[i], E_0);
+			/* T2 */
+			for(int i=0; i<nfsT2; i++) {
+				double Epsilon = epsilon(x, fsenergyT2[i], E_0);
 				if(Epsilon<=0) continue; // cannot reach this final state
 				if(pow(Epsilon, 2) <= ms) continue; // cannot reach this final state
 				if(ms>=0)
-					shape += fsprob[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergy[i], E_0);
+					shape += fsprobT2[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyT2[i], E_0) * katrin.T2concentration;
 				else {//Non-physical extrapolation.
 					double mu = 0.72 * sqrt(-1 * ms);
-					shape += fsprob[i] * (Epsilon + mu*exp(-1 - Epsilon/mu)) * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergy[i], E_0);
+					shape += fsprobT2[i] * (Epsilon + mu*exp(-1 - Epsilon/mu)) * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyT2[i], E_0) * katrin.T2concentration;
+				}
+			}
+
+			/* DT */
+			for(int i=0; i<nfsDT; i++) {
+				double Epsilon = epsilon(x, fsenergyDT[i], E_0);
+				if(Epsilon<=0) continue; // cannot reach this final state
+				if(pow(Epsilon, 2) <= ms) continue; // cannot reach this final state
+				if(ms>=0)
+					shape += fsprobDT[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyDT[i], E_0) * katrin.DTconcentration;
+				else {//Non-physical extrapolation.
+					double mu = 0.72 * sqrt(-1 * ms);
+					shape += fsprobDT[i] * (Epsilon + mu*exp(-1 - Epsilon/mu)) * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyDT[i], E_0) * katrin.DTconcentration;
+				}
+			}
+
+			/* HT */
+			for(int i=0; i<nfsHT; i++) {
+				double Epsilon = epsilon(x, fsenergyHT[i], E_0);
+				if(Epsilon<=0) continue; // cannot reach this final state
+				if(pow(Epsilon, 2) <= ms) continue; // cannot reach this final state
+				if(ms>=0)
+					shape += fsprobHT[i] * Epsilon * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyHT[i], E_0) * katrin.HTconcentration;
+				else {//Non-physical extrapolation.
+					double mu = 0.72 * sqrt(-1 * ms);
+					shape += fsprobHT[i] * (Epsilon + mu*exp(-1 - Epsilon/mu)) * sqrt(pow(Epsilon,2) - ms) * radiative_correction(x, fsenergyHT[i], E_0) * katrin.HTconcentration;
 				}
 			}
 			return shape;

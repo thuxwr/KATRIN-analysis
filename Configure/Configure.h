@@ -7,7 +7,7 @@
 #ifndef Configure_h
 #define Configure_h
 
-#define Nfinalstate 52 //Discretized final state number
+#define NfinalstateMAX 500 //Discretized final state number
 #define NbinsDecaySpec 800 //Nbins for decay spectrum
 #define LowBoundary -35 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
@@ -76,7 +76,10 @@ class KATRIN
 		double B_max_sigma = 100;
 
 		/* Source. */
-		double epsilon_T = 0.95; // T2 purity
+		//double epsilon_T = 0.95; // T2 purity
+		double T2concentration = 0;
+		double DTconcentration = 1;
+		double HTconcentration = 0;
 		double T_bt = 30; // temperature in WGTS, in unit:K
 		double bv = 13; //weighed mean bulk velocity, in unit:m/s.
 
