@@ -7,65 +7,64 @@
 
 #include "../../../Detect/DetectMPI.h"
 #include "../../../Configure/Configure.h"
-//#include "../../../Data/GetDataFile.h"
-//#include "TMath.h"
+#include "../../../Data/GetDataFile.h"
+#include "TMath.h"
 
 DetectMPI detect;
 KATRIN Katrin;
-//Data data;
+Data data;
 
 namespace KATRIN_namespace {
 
 /* Data selection. */
 int nvoltage;
 double* voltage;
-//double** efficiency;
-//double** livetime;
+double** efficiency;
+double** livetime;
 
 using namespace std;
-using namespace TMath;
 
 double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
 int GetSubrunNum(ostream* pstream) { return nvoltage; }
 
-//vector<int> GetData(ostream* pstream) {
-//	cout << "Data was got for the first time." << endl;
-//	nvoltage = 0;
-//	voltage = new double[data.GetSubrunNum()];
-//	efficiency = new double*[data.GetSubrunNum()];
-//	livetime = new double*[data.GetSubrunNum()];
-//
-//	/* Loop over subruns. */
-//	vector<int> selected_data = {};
-//	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
-//		/* Cut 1: Contain necessary data. */
-//		if(IsNaN(data.TritiumPurity[subrun])) continue;
-//		if(IsNaN(data.ColumnDensity[subrun])) continue;
-//
-//		/* Cut 2: Stable gas flow. */
-//		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
-//
-//		/* Cut 3: Energy in [-100, 50] eV. */
-//		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
-//
-//		int count = 0;
-//		efficiency[nvoltage] = new double[NPixels];
-//		livetime[nvoltage] = new double[NPixels];
-//		for(int npixel=0; npixel<NPixels; npixel++) {
-//			if(data.Efficiency[subrun][npixel]<=0) continue;
-//			count += data.EventCount[subrun][npixel];
-//			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
-//			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
-//		}
-//
-//		selected_data.push_back(count);
-//
-//		voltage[nvoltage] = data.Voltage[subrun];
-//		nvoltage ++;
-//	}
-//
-//	return selected_data;
-//}
+vector<int> GetData(ostream* pstream) {
+	cout << "Data was got for the first time." << endl;
+	nvoltage = 0;
+	voltage = new double[data.GetSubrunNum()];
+	efficiency = new double*[data.GetSubrunNum()];
+	livetime = new double*[data.GetSubrunNum()];
+
+	/* Loop over subruns. */
+	vector<int> selected_data = {};
+	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
+		/* Cut 1: Contain necessary data. */
+		if(TMath::IsNaN(data.TritiumPurity[subrun])) continue;
+		if(TMath::IsNaN(data.ColumnDensity[subrun])) continue;
+
+		/* Cut 2: Stable gas flow. */
+		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
+
+		/* Cut 3: Energy in [-100, 50] eV. */
+		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
+
+		int count = 0;
+		efficiency[nvoltage] = new double[NPixels];
+		livetime[nvoltage] = new double[NPixels];
+		for(int npixel=0; npixel<NPixels; npixel++) {
+			if(data.Efficiency[subrun][npixel]<=0) continue;
+			count += data.EventCount[subrun][npixel];
+			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
+			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
+		}
+
+		selected_data.push_back(count);
+
+		voltage[nvoltage] = data.Voltage[subrun];
+		nvoltage ++;
+	}
+
+	return selected_data;
+}
 
 template <>
 inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
@@ -95,7 +94,7 @@ inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
 
 /* Now we force the first derivative to be zero for those nuisance parameters. */
 template <>
-inline vector<var> signal(const vector<var>& pars, ostream* pstream) {
+inline vector<stan::math::var> signal(const vector<stan::math::var>& pars, ostream* pstream) {
 	vector<double> pars_d;
 	for(int i=0; i<pars.size(); i++) {
 		pars_d.push_back(pars.at(i).val());
@@ -129,7 +128,7 @@ inline vector<var> signal(const vector<var>& pars, ostream* pstream) {
 		D2_low[i]  = signal(new_pars[3], pstream);
 	}
 
-	vector<var> jacob = {};
+	vector<stan::math::var> jacob = {};
 	for(int bin=0; bin<nvoltage; bin++) {
 		double* grad = ChainableStack::instance().memalloc_.alloc_array<double>(pars.size());
 		for(int i=0; i<pars.size(); i++) {
@@ -141,7 +140,7 @@ inline vector<var> signal(const vector<var>& pars, ostream* pstream) {
 			else grad[i] = 0;
 		}
 		double value = entries.at(bin);
-		jacob.push_back(var(new precomputed_gradients_vari(value, pars.size(), operands, grad)));
+		jacob.push_back(stan::math::var(new precomputed_gradients_vari(value, pars.size(), operands, grad)));
 	}
 	return jacob;
 }
