@@ -7,18 +7,65 @@
 
 #include "../../../Detect/DetectMPI.h"
 #include "../../../Configure/Configure.h"
+#include "../../../Data/GetDataFile.h"
+#include "TMath.h"
 
 DetectMPI detect;
 KATRIN Katrin;
+Data data;
 
 namespace KATRIN_namespace {
 
-int nvoltage = Katrin.Nbins;
-double* voltage = Katrin.Voltage;
+/* Data selection. */
+int nvoltage;
+double* voltage;
+double** efficiency;
+double** livetime;
 
 using namespace std;
+using namespace TMath;
 
 double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
+int GetSubrunNum(ostream* pstream) { return nvoltage; }
+
+vector<int> GetData(ostream* pstream) {
+	cout << "Data was got for the first time." << endl;
+	nvoltage = 0;
+	voltage = new double[data.GetSubrunNum()];
+	efficiency = new double*[data.GetSubrunNum()];
+	livetime = new double*[data.GetSubrunNum()];
+
+	/* Loop over subruns. */
+	vector<int> selected_data = {};
+	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
+		/* Cut 1: Contain necessary data. */
+		if(IsNaN(data.TritiumPurity[subrun])) continue;
+		if(IsNaN(data.ColumnDensity[subrun])) continue;
+
+		/* Cut 2: Stable gas flow. */
+		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
+
+		/* Cut 3: Energy in [-100, 50] eV. */
+		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
+
+		int count = 0;
+		efficiency[nvoltage] = new double[NPixels];
+		livetime[nvoltage] = new double[NPixels];
+		for(int npixel=0; npixel<NPixels; npixel++) {
+			if(data.Efficiency[subrun][npixel]<=0) continue;
+			count += data.EventCount[subrun][npixel];
+			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
+			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
+		}
+
+		selected_data.push_back(count);
+
+		voltage[nvoltage] = data.Voltage[subrun];
+		nvoltage ++;
+	}
+
+	return selected_data;
+}
 
 template <>
 inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
@@ -34,13 +81,13 @@ inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
 	double e1 = pars.at(9);
 	double e2 = pars.at(10);
 	double sigma = pars.at(11);
-	//double B_max = Katrin.B_max;
 	vector<double> entries = {};
 	detect.SetScatParams(A1, A2, w1, w2, e1, e2, sigma);
 	detect.SetMagnetic(B_A, B_S, B_max);
-	double* detspec = detect.DetSpec(mass, endpoint, nvoltage, voltage);
-	for(int bin=0; bin<nvoltage; bin++) {
-		entries.push_back(detspec[bin]);
+	double* detspec = detect.DetSpec(mass, endpoint, nvoltage, voltage, efficiency);
+
+	for(int subrun=0; subrun<nvoltage; subrun++) {
+		entries.push_back(detspec[subrun] * livetime[subrun][0]); //Livetime is the same for all pixels.
 	}
 	delete[] detspec;
 	return entries;

@@ -32,7 +32,7 @@ class ScatterProb
 			dens = (TH1D*)file->Get("density");
 
 			tmpz = -10;
-			Ncalib = 5e17;
+			Ncalib = 4.46e17;
 			int low = 0;
 			int up = dens->FindBin(5); //Width of WGTS is 10m.
 			calib = dens->Integral(low, up);
@@ -99,6 +99,10 @@ class ScatterProb
 
 		double GetColumnDensity(double z) {
 			return dens->GetBinContent(dens->FindBin(abs(z)));
+		}
+
+		void SetColumnDensity(double cd) {
+			Ncalib = cd;
 		}
 
 	private:
