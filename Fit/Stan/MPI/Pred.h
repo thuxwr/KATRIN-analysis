@@ -7,20 +7,20 @@
 
 #include "../../../Detect/DetectMPI.h"
 #include "../../../Configure/Configure.h"
-#include "../../../Data/GetDataFile.h"
-#include "TMath.h"
+//#include "../../../Data/GetDataFile.h"
+//#include "TMath.h"
 
 DetectMPI detect;
 KATRIN Katrin;
-Data data;
+//Data data;
 
 namespace KATRIN_namespace {
 
 /* Data selection. */
 int nvoltage;
 double* voltage;
-double** efficiency;
-double** livetime;
+//double** efficiency;
+//double** livetime;
 
 using namespace std;
 using namespace TMath;
@@ -28,44 +28,44 @@ using namespace TMath;
 double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
 int GetSubrunNum(ostream* pstream) { return nvoltage; }
 
-vector<int> GetData(ostream* pstream) {
-	cout << "Data was got for the first time." << endl;
-	nvoltage = 0;
-	voltage = new double[data.GetSubrunNum()];
-	efficiency = new double*[data.GetSubrunNum()];
-	livetime = new double*[data.GetSubrunNum()];
-
-	/* Loop over subruns. */
-	vector<int> selected_data = {};
-	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
-		/* Cut 1: Contain necessary data. */
-		if(IsNaN(data.TritiumPurity[subrun])) continue;
-		if(IsNaN(data.ColumnDensity[subrun])) continue;
-
-		/* Cut 2: Stable gas flow. */
-		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
-
-		/* Cut 3: Energy in [-100, 50] eV. */
-		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
-
-		int count = 0;
-		efficiency[nvoltage] = new double[NPixels];
-		livetime[nvoltage] = new double[NPixels];
-		for(int npixel=0; npixel<NPixels; npixel++) {
-			if(data.Efficiency[subrun][npixel]<=0) continue;
-			count += data.EventCount[subrun][npixel];
-			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
-			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
-		}
-
-		selected_data.push_back(count);
-
-		voltage[nvoltage] = data.Voltage[subrun];
-		nvoltage ++;
-	}
-
-	return selected_data;
-}
+//vector<int> GetData(ostream* pstream) {
+//	cout << "Data was got for the first time." << endl;
+//	nvoltage = 0;
+//	voltage = new double[data.GetSubrunNum()];
+//	efficiency = new double*[data.GetSubrunNum()];
+//	livetime = new double*[data.GetSubrunNum()];
+//
+//	/* Loop over subruns. */
+//	vector<int> selected_data = {};
+//	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
+//		/* Cut 1: Contain necessary data. */
+//		if(IsNaN(data.TritiumPurity[subrun])) continue;
+//		if(IsNaN(data.ColumnDensity[subrun])) continue;
+//
+//		/* Cut 2: Stable gas flow. */
+//		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
+//
+//		/* Cut 3: Energy in [-100, 50] eV. */
+//		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
+//
+//		int count = 0;
+//		efficiency[nvoltage] = new double[NPixels];
+//		livetime[nvoltage] = new double[NPixels];
+//		for(int npixel=0; npixel<NPixels; npixel++) {
+//			if(data.Efficiency[subrun][npixel]<=0) continue;
+//			count += data.EventCount[subrun][npixel];
+//			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
+//			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
+//		}
+//
+//		selected_data.push_back(count);
+//
+//		voltage[nvoltage] = data.Voltage[subrun];
+//		nvoltage ++;
+//	}
+//
+//	return selected_data;
+//}
 
 template <>
 inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
