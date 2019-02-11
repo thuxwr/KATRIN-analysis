@@ -12,6 +12,9 @@
 #include "TGraph.h"
 #include <unistd.h>
 #include <iomanip>
+#include "TMath.h"
+
+using namespace TMath;
 
 class ResponseMPI 
 {
@@ -21,7 +24,7 @@ class ResponseMPI
 		}
 
 		~ResponseMPI() {
-			delete gtotal_response;
+			//delete gtotal_response;
 		}
 
 		void initialize(int argc, char** argv) { response.initialize(argc, argv); }
@@ -31,7 +34,6 @@ class ResponseMPI
 		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
 
 		void SetupResponse(double B_A, double B_S, double B_max) {
-			delete gtotal_response;
 			/* Get the sum of total column density. */
 			int nslice = response.GetNSlices();
 			int size;
@@ -42,42 +44,36 @@ class ResponseMPI
 			}
 			double TotN = 0;
 			for(int i=0; i<nslice; i++) TotN += response.GetColumnDensity(i) * response.GetTotalA(i);
+			ScaleFactor = TotN;
 
 			int slice;
 			MPI_Comm_rank(MPI_COMM_WORLD, &slice);
-			double sliceN = response.GetColumnDensity(slice) * response.GetTotalA(slice);
-			double weight = sliceN/TotN;
 
 			response.SetSlice(slice);
 			response.SetupResponse(B_A, B_S, B_max);
+		}
 
-			TGraph* slice_response = response.GetResponse();
-			int npoints = slice_response->GetN();
-			double* local_response = new double[npoints];
-			double* total_response = new double[npoints];
-			double* yvalue = slice_response->GetY();
-			for(int i=0; i<npoints; i++) local_response[i] = yvalue[i] * weight; 
-
-			/* Send to first core. */
-			MPI_Reduce(local_response, total_response, npoints, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-			if(slice==0) {
-				/* Change Send&Recv to Reduce.
-				for(int i=0; i<npoints; i++) total_response[i] = local_response[i];
-				for(int source=1; source<nslice; source++) {
-					MPI_Recv(local_response, npoints, MPI_DOUBLE, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					for(int i=0; i<npoints; i++) total_response[i] += local_response[i];
+		void SetupEfficiency(double* efficiency) {
+			delete gtotal_response;
+			double* responsetotal = new double[response.NPoints];
+			double* responselocal = new double[response.NPoints];
+			for(int npoint=0; npoint<response.NPoints; npoint++) {
+				responselocal[npoint] = 0;
+				for(int pixel=0; pixel<NPixels; pixel++) {
+					if(efficiency[pixel]<=0 || IsNaN(efficiency[pixel])) continue;
+					responselocal[npoint] += response.response[pixel][npoint] * response.GetSegmentA(pixel) * efficiency[pixel];
 				}
-				*/
-				double* xvalue = slice_response->GetX();
-				gtotal_response = new TGraph(npoints, xvalue, total_response);
+				responselocal[npoint] *= response.GetColumnDensity();
 			}
-			else {
-				//MPI_Send(local_response, npoints, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD);
-				gtotal_response = new TGraph;
-			}
-			MPI_Barrier(MPI_COMM_WORLD);
+			MPI_Reduce(responselocal, responsetotal, response.NPoints, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
-			delete[] local_response; delete[] total_response;
+			/* Setup response function. */
+			int slice;
+			MPI_Comm_rank(MPI_COMM_WORLD, &slice);
+			if(slice==0) {
+				for(int npoint=0; npoint<response.NPoints; npoint++) responsetotal[npoint] /= ScaleFactor;
+				gtotal_response = new TGraph(response.NPoints, response.X, responsetotal);
+			}
 		}
 
 		double GetResponse(double E, double U) {
@@ -91,6 +87,7 @@ class ResponseMPI
 	private:
 		Response response;
 		TGraph* gtotal_response;
+		double ScaleFactor;
 
 };
 

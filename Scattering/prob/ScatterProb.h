@@ -41,10 +41,10 @@ class ScatterProb
 		}
 
 		~ScatterProb() {
-			delete dens;
-			for(int i=0; i<4; i++) delete CumulatePdf[i];
-			file->Close();
-			delete file;
+			//delete dens;
+			//for(int i=0; i<4; i++) delete CumulatePdf[i];
+			//file->Close();
+			//delete file;
 		}
 
 		double GetProb(int s, double z, double cos_theta) {

@@ -24,7 +24,7 @@ class ScatEngLoss
 
 			/* Initialize FFT. */
 			npoints = 100000;
-			upboundary = 50;
+			upboundary = 100;
 
 			fft = TVirtualFFT::FFT(1, &npoints, "R2C M K");
 			fft_back = TVirtualFFT::FFT(1, &npoints, "C2R M K");
@@ -103,8 +103,8 @@ class ScatEngLoss
 				return 0;
 			}
 
-			if(epsilon>50) {
-				cout << "Energy loss greater than 50eV is not calculated yet." << endl;
+			if(epsilon>100) {
+				cout << "Energy loss greater than 100eV is not calculated yet." << endl;
 				return 0;
 			}
 

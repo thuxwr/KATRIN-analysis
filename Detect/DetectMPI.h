@@ -53,7 +53,7 @@ class DetectMPI
 			IsUpdate = IsUpdate && response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 		}
 
-		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
+		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double* efficiency) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
 			if(mass!=_mass || endpoint!=_endpoint) {
 				delete broadenspec;
 				TH1D* decayspec = spec.decayspec(mass, endpoint);
@@ -80,8 +80,12 @@ class DetectMPI
 				response.SetupResponse(_B_A, _B_S, _B_max);
 			}
 
-			/* Normalization. */
-			double scale;
+			/* Setup detector efficiency for subruns. */
+			response.SetupEfficiency(efficiency);
+
+			/* Normalization. Not suitable for FirstTritium! */
+			double scale = 1;
+			/*
 			{
 				double content = 0;
 				double U = 18544.25;
@@ -91,6 +95,7 @@ class DetectMPI
 				}
 				scale = katrin.Sig_rate/content;
 			}
+			*/
 
 			for(int n=0; n<nvoltage; n++) {
 				double content = 0;

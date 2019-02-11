@@ -25,12 +25,8 @@ KATRIN Katrin;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 	double hehehe = 0;
+	/*
 	while(true) {
-		if(rank==0) 
-			for(int i=1; i<size; i++) MPI_Send(&flag, 1, MPI_INT, i, 0, MPI_COMM_WORLD);
-		else
-			MPI_Recv(&flag, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-
 		res.SetupScatParameters(0.204, 0.0556, 1.85, 12.5, 12.6, 14.3, 3.4e-18);
 		res.SetupResponse(Katrin.B_A, Katrin.B_S, Katrin.B_max+hehehe);
 		//res.SetupResponse(Katrin.B_A, Katrin.B_S, Katrin.B_max);
@@ -39,6 +35,18 @@ KATRIN Katrin;
 			time += 1;
 		}
 		hehehe += 0.0001;
+	}
+	*/
+	res.SetupScatParameters(0.204, 0.0556, 1.85, 12.5, 12.6, 14.3, 3.4e-18);
+	res.SetupResponse(Katrin.B_A, Katrin.B_S, Katrin.B_max);
+
+	double* efficiency = new double[148];
+	for(int i=0; i<148; i++) efficiency[i] = 1;
+	res.SetupEfficiency(efficiency);
+
+	if(rank==0) {
+		res.GetResponse()->SetName("haha");
+		res.GetResponse()->SaveAs("hehe.root");
 	}
 	MPI_Finalize();
 
