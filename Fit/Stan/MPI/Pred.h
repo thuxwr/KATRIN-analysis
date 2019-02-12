@@ -27,6 +27,7 @@ using namespace std;
 double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
 int GetSubrunNum(ostream* pstream) { 
 	int subruncount = 0;
+	cout << "Total subrun num: " << data.GetSubrunNum() << endl;
 	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
 		/* Cut 1: Contain necessary data. */
 		if(TMath::IsNaN(data.TritiumPurity[subrun])) continue;
@@ -36,10 +37,15 @@ int GetSubrunNum(ostream* pstream) {
 		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
 
 		/* Cut 3: Energy in [-100, 50] eV. */
+		cout << "test voltage filter:" << endl;
+		cout << "Voltage: " << data.Voltage[subrun] << endl;
+		cout << "E_0_center: " << Katrin.E_0_center << endl;
 		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
+		cout << "subrun num passing Voltage filter: this" << endl;
 
 		subruncount ++;
 	}
+	cout << "Total selected subrun num: " << subruncount << endl;
 	return subruncount;
 }
 

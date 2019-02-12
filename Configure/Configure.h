@@ -34,6 +34,7 @@ class KATRIN
 {
 	public:
 		KATRIN() {
+			/*
 			char* KATRIN_path = getenv("KATRIN");
 			if(KATRIN_path==0) {
 				cout << "Environment variable 'KATRIN' is not defined." << endl;
@@ -63,6 +64,7 @@ class KATRIN
 				Rate[i] = Count[i]/Time[i];
 				Error[i] = sqrt(Count[i])/Time[i];
 			}
+			*/
 		}
 
 		~KATRIN(){}

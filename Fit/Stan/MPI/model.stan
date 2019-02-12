@@ -11,11 +11,16 @@ data {
 	//vector[nbins] error;
 }
 
+transformed data {
+	int nsubrun = GetSubrunNum();
+	int count[nsubrun] = GetData();
+}
+
 parameters {
-	real<lower=0, upper=2> mass;
-	real<lower=18572, upper=18576> endpoint;
-	real<lower=-1000, upper=1000> A_sig;
-	real<lower=0.9, upper=1.1> A_bkg;
+	//real<lower=0, upper=2> mass;
+	//real<lower=18572, upper=18576> endpoint;
+	real<lower=0, upper=1e6> A_sig;
+	real<lower=0, upper=10> A_bkg;
 	//real<lower=2.63, upper=2.73> B_A;
 	//real<lower=24950, upper=25450> B_S;
 	//real<lower=41500, upper=42500> B_max;
@@ -28,6 +33,8 @@ parameters {
 }
 
 model {
+	real mass = 0;
+	real endpoint = 18574;
 	real e1 = 12.6;
 	real B_A = 2.68e-4;
 	real B_S = 2.52;
@@ -39,18 +46,17 @@ model {
 	real e2 = 14.3;
 	real sigma = 3.4;
 	real pars[12] = {mass, endpoint, B_A, B_S, B_max, A1, A2, w1, w2, e1, e2, sigma*1e-18};
-	int nsubrun = GetSubrunNum();
-	int count[nsubrun] = GetData();
 	real sig[nsubrun] = signal(pars);
 	real pred[nsubrun];
+	print("nsubrun: ", nsubrun);
 	//vector[nbins+2] par_std;
 	for(n in 1:nsubrun) {
-		pred[n] = sig[n] * (A_sig*0.0001 + 1) + A_bkg * bkg();
+		pred[n] = sig[n] * A_sig + A_bkg * bkg();
 		//target += (rate[n]-pred[n]) * (pred[n]-rate[n]) / error[n] / error[n];
 		//par_std[n] = (rate[n] - pred[n])/error[n];
-		//print("Nbin: ", n, " Pred: ", pred[n], " rate: ", rate[n], " error: ", error[n]);
+		if(n==110) print("Nbin: ", n, " Pred: ", pred[n], " count: ", count[n], " A_sig: ", A_sig);
 	}
-	count ~ poisson(sig);
+	count ~ poisson(pred);
 //	B_A ~ normal(2.68, 0.01);
 //	B_S ~ normal(2.52e4, 50);
 //	B_max ~ normal(4.2e4, 100);
