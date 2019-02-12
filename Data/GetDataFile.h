@@ -12,6 +12,8 @@
 
 #include "KIRunSummaryDocument.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 #include <string>
 #include "KIIdle.h"
 #include "KTree.h"
@@ -25,19 +27,18 @@ class Data
 {
 	public:
 		Data() {
+			char* KATRINpath = getenv("KATRIN");
+			path = KATRINpath;
+			path = path + "/Data";
 			LiveTime = new double*[NSubrunMax];
 			Efficiency = new double*[NSubrunMax];
 			EventCount = new int*[NSubrunMax];
 
 			SetDataset("FirstTritium.katrin");
-			auto dataset = idle.FindDataSet(DataSet);
-			KTree filter = (make_tree
-					("Limit", 2000)
-					("FileName", "RunSummary3c")
-			);
-			dataset->GetFileList(filter, filelist);
-			NRuns = filelist.NumberOfRows();
-			GetData();
+			if(!GetDataFile()) {
+				GetDataIdle();
+				DumpData();
+			}
 		}
 
 		~Data(){}
@@ -46,7 +47,42 @@ class Data
 			DataSet = datasetname;
 		}
 
-		void GetData() {
+		int GetSubrunNum() { return NSubrun; }
+
+	private:
+		KIIdle idle;
+		string DataSet;
+		string path;
+		int NSubrun;
+
+		bool GetDataFile() {
+			ifstream fin((path+"/data.dat").c_str());
+			if(!fin.is_open()) return false;
+			fin >> NSubrun;
+			for(int run=0; run<NSubrun; run++) fin >> ColumnDensity[run];
+			for(int run=0; run<NSubrun; run++) fin >> TritiumPurity[run];
+			for(int run=0; run<NSubrun; run++) fin >> Voltage[run];
+
+			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
+				fin >> LiveTime[run][npixel];
+			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
+				fin >> Efficiency[run][npixel];
+			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
+				fin >> EventCount[run][npixel];
+			return true;
+		}
+
+		void GetDataIdle() {
+			KTree filter = (make_tree
+					("Limit", 2000)
+					("FileName", "RunSummary3c")
+			);
+			KTabree filelist;
+
+			auto dataset = idle.FindDataSet(DataSet);
+			dataset->GetFileList(filter, filelist);
+			int NRuns = filelist.NumberOfRows();
+
 			int subrun = 0;
 
 			/* Loop over all runs. */
@@ -136,14 +172,51 @@ class Data
 			NSubrun = subrun;
 		}
 
-		int GetSubrunNum() { return NSubrun; }
+		void DumpData() {
+			ofstream fout((path+"/data.dat").c_str());
+			fout.precision(9);
 
-	private:
-		KIIdle idle;
-		KTabree filelist;
-		string DataSet;
-		int NRuns;
-		int NSubrun;
+			/* First line: NSubrun. */
+			fout << GetSubrunNum() << endl;
+
+			/* Second line: column density. */
+			for(int run=0; run<GetSubrunNum(); run++) 
+				fout << ColumnDensity[run] << "\t";
+			fout << endl;
+
+			/* Third line: tritium purity. */
+			for(int run=0; run<GetSubrunNum(); run++)
+				fout << TritiumPurity[run] << "\t";
+			fout << endl;
+
+			/* Fourth line: voltage. */
+			for(int run=0; run<GetSubrunNum(); run++)
+				fout << Voltage[run] << "\t";
+			fout << endl;
+
+			/* 5 ~ 4+NSubrun: livetime array for each subrun. */
+			for(int run=0; run<GetSubrunNum(); run++) {
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fout << LiveTime[run][npixel] << "\t";
+				fout << endl;
+			}
+
+			/* 5+NSubrun ~ 4+2NSubrun: efficiency array. */
+			for(int run=0; run<GetSubrunNum(); run++) {
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fout << Efficiency[run][npixel] << "\t";
+				fout << endl;
+			}
+
+			/* 5+2NSubrun ~ 4+3NSubrun: event count. */
+			for(int run=0; run<GetSubrunNum(); run++) {
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fout << EventCount[run][npixel] << "\t";
+				fout << endl;
+			}
+
+			fout.close();
+		}
 
 	public:
 		double ColumnDensity[NSubrunMax];
