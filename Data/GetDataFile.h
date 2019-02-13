@@ -69,6 +69,7 @@ class Data
 				fin >> Efficiency[run][npixel];
 			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
 				fin >> EventCount[run][npixel];
+			fin.close();
 			return true;
 		}
 
@@ -232,13 +233,15 @@ class GlobalSimulation
 {
 	public:
 		GlobalSimulation() {
-			doc.AddInput("GlobalSimulation-FirstTritium-PeriodSummary_Dec2018-REF_18600V_6.0G-000002.ktf@FirstTritium.katrin");
-			for(int pixel=0; pixel<NPixels; pixel++) {
-				B_A[pixel] = doc["Values/AnalyzingPlane/MagneticField"][pixel].As<double>();
-				E[pixel] = doc["Values/AnalyzingPlane/ElectricPotential"][pixel].As<double>();
-				B_max[pixel] = doc["Values/Pinch/MagneticField"][pixel].As<double>();
-				B_S[pixel] = doc["Values/PS2/MagneticField"][pixel].As<double>();
+			char* KATRINpath = getenv("KATRIN");
+			path = KATRINpath;
+			path = path + "/Data";
+
+			if(!GetDataFile()) {
+				GetDataIdle();
+				DumpData();
 			}
+
 		}
 
 		~GlobalSimulation() {}
@@ -248,6 +251,54 @@ class GlobalSimulation
 
 	private:
 		KIRunSummaryDocument doc;
+		string path;
+
+		bool GetDataFile() {
+			ifstream fin((path+"/field.dat").c_str());
+			if(!fin.is_open()) return false;
+
+			for(int npixel=0; npixel<NPixels; npixel++) fin >> B_A[npixel];
+			for(int npixel=0; npixel<NPixels; npixel++) fin >> B_S[npixel];
+			for(int npixel=0; npixel<NPixels; npixel++) fin >> B_max[npixel];
+			for(int npixel=0; npixel<NPixels; npixel++) fin >> E[npixel];
+
+			fin.close();
+			return true;
+		}
+
+		void DumpData() {
+			ofstream fout((path+"/field.dat").c_str());
+			fout.precision(9);
+
+			for(int npixel=0; npixel<NPixels; npixel++) 
+				fout << B_A[npixel] << "\t";
+			fout << endl;
+
+			for(int npixel=0; npixel<NPixels; npixel++) 
+				fout << B_S[npixel] << "\t";
+			fout << endl;
+
+			for(int npixel=0; npixel<NPixels; npixel++) 
+				fout << B_max[npixel] << "\t";
+			fout << endl;
+
+			for(int npixel=0; npixel<NPixels; npixel++) 
+				fout << E[npixel] << "\t";
+			fout << endl;
+
+			fout.close();
+		}
+
+		void GetDataIdle() {
+			doc.AddInput("GlobalSimulation-FirstTritium-PeriodSummary_Dec2018-REF_18600V_6.0G-000002.ktf@FirstTritium.katrin");
+			for(int pixel=0; pixel<NPixels; pixel++) {
+				B_A[pixel] = doc["Values/AnalyzingPlane/MagneticField"][pixel].As<double>();
+				E[pixel] = doc["Values/AnalyzingPlane/ElectricPotential"][pixel].As<double>();
+				B_max[pixel] = doc["Values/Pinch/MagneticField"][pixel].As<double>();
+				B_S[pixel] = doc["Values/PS2/MagneticField"][pixel].As<double>();
+			}
+		}
+
 
 };
 
