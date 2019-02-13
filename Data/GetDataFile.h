@@ -63,12 +63,21 @@ class Data
 			for(int run=0; run<NSubrun; run++) fin >> TritiumPurity[run];
 			for(int run=0; run<NSubrun; run++) fin >> Voltage[run];
 
-			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
-				fin >> LiveTime[run][npixel];
-			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
-				fin >> Efficiency[run][npixel];
-			for(int run=0; run<NSubrun; run++) for(int npixel=0; npixel<NPixels; npixel++)
-				fin >> EventCount[run][npixel];
+			for(int run=0; run<NSubrun; run++) {
+				LiveTime[run] = new double[NPixels];
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fin >> LiveTime[run][npixel];
+			}
+			for(int run=0; run<NSubrun; run++) {
+				Efficiency[run] = new double[NPixels];
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fin >> Efficiency[run][npixel];
+			}
+			for(int run=0; run<NSubrun; run++) {
+				EventCount[run] = new int[NPixels];
+				for(int npixel=0; npixel<NPixels; npixel++)
+					fin >> EventCount[run][npixel];
+			}
 			fin.close();
 			return true;
 		}
@@ -96,6 +105,7 @@ class Data
 					/* HV readout. */
 					try {
 						Voltage[subrun] = subRunDoc["Values/Transmission/K35VoltageReading"].As<double>();
+						if(IsNaN(Voltage[subrun])) Voltage[subrun] = -1;
 					}
 					catch(KException& e) {
 						Voltage[subrun] = -1;
@@ -104,6 +114,7 @@ class Data
 					/* Tritium purity. */
 					try {
 						TritiumPurity[subrun] = subRunDoc["Values/LARA/TritiumPurity"].As<double>();
+						if(IsNaN(TritiumPurity[subrun])) TritiumPurity[subrun] = -1;
 					}
 					catch(KException& e) {
 						TritiumPurity[subrun] = -1;
@@ -112,6 +123,7 @@ class Data
 					/* Column density. */
 					try {
 						ColumnDensity[subrun] = subRunDoc["Values/ColumnDensity/ColumnDensity"].As<double>();
+						if(IsNaN(ColumnDensity[subrun])) ColumnDensity[subrun] = -1;
 					}
 					catch(KException& e) {
 						ColumnDensity[subrun] = -1;

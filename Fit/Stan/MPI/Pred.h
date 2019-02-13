@@ -30,8 +30,8 @@ int GetSubrunNum(ostream* pstream) {
 	cout << "Total subrun num: " << data.GetSubrunNum() << endl;
 	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
 		/* Cut 1: Contain necessary data. */
-		if(TMath::IsNaN(data.TritiumPurity[subrun])) continue;
-		if(TMath::IsNaN(data.ColumnDensity[subrun])) continue;
+		if(TMath::IsNaN(data.TritiumPurity[subrun]) || data.TritiumPurity[subrun]<0) continue;
+		if(TMath::IsNaN(data.ColumnDensity[subrun]) || data.ColumnDensity[subrun]<0) continue;
 
 		/* Cut 2: Stable gas flow. */
 		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
