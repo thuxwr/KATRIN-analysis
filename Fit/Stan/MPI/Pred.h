@@ -27,7 +27,6 @@ using namespace std;
 double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
 int GetSubrunNum(ostream* pstream) { 
 	int subruncount = 0;
-	cout << "Total subrun num: " << data.GetSubrunNum() << endl;
 	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
 		/* Cut 1: Contain necessary data. */
 		if(TMath::IsNaN(data.TritiumPurity[subrun]) || data.TritiumPurity[subrun]<0) continue;
@@ -37,20 +36,14 @@ int GetSubrunNum(ostream* pstream) {
 		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
 
 		/* Cut 3: Energy in [-100, 50] eV. */
-		cout << "test voltage filter:" << endl;
-		cout << "Voltage: " << data.Voltage[subrun] << endl;
-		cout << "E_0_center: " << Katrin.E_0_center << endl;
 		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
-		cout << "subrun num passing Voltage filter: this" << endl;
 
 		subruncount ++;
 	}
-	cout << "Total selected subrun num: " << subruncount << endl;
 	return subruncount;
 }
 
 vector<int> GetData(ostream* pstream) {
-	cout << "Data was got for the first time." << endl;
 	nvoltage = 0;
 	voltage = new double[data.GetSubrunNum()];
 	efficiency = new double*[data.GetSubrunNum()];
@@ -60,8 +53,8 @@ vector<int> GetData(ostream* pstream) {
 	vector<int> selected_data = {};
 	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
 		/* Cut 1: Contain necessary data. */
-		if(TMath::IsNaN(data.TritiumPurity[subrun])) continue;
-		if(TMath::IsNaN(data.ColumnDensity[subrun])) continue;
+		if(TMath::IsNaN(data.TritiumPurity[subrun]) || data.TritiumPurity[subrun]<0) continue;
+		if(TMath::IsNaN(data.ColumnDensity[subrun]) || data.ColumnDensity[subrun]<0) continue;
 
 		/* Cut 2: Stable gas flow. */
 		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;

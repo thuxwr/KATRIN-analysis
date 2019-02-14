@@ -48,7 +48,6 @@ model {
 	real pars[12] = {mass, endpoint, B_A, B_S, B_max, A1, A2, w1, w2, e1, e2, sigma*1e-18};
 	real sig[nsubrun] = signal(pars);
 	real pred[nsubrun];
-	print("nsubrun: ", nsubrun);
 	//vector[nbins+2] par_std;
 	for(n in 1:nsubrun) {
 		pred[n] = sig[n] * A_sig + A_bkg * bkg();

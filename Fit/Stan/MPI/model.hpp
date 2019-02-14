@@ -18,7 +18,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model.stan");
-    reader.add_event(72, 70, "end", "model.stan");
+    reader.add_event(71, 69, "end", "model.stan");
     return reader;
 }
 
@@ -308,23 +308,17 @@ public:
             stan::math::fill(pred,DUMMY_VAR__);
 
 
-            current_statement_begin__ = 51;
-            if (pstream__) {
-                stan_print(pstream__,"nsubrun: ");
-                stan_print(pstream__,nsubrun);
-                *pstream__ << std::endl;
-            }
-            current_statement_begin__ = 53;
+            current_statement_begin__ = 52;
             for (int n = 1; n <= nsubrun; ++n) {
 
-                current_statement_begin__ = 54;
+                current_statement_begin__ = 53;
                 stan::model::assign(pred, 
                             stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
                             ((get_base1(sig,n,"sig",1) * A_sig) + (A_bkg * bkg(pstream__))), 
                             "assigning variable pred");
-                current_statement_begin__ = 57;
+                current_statement_begin__ = 56;
                 if (as_bool(logical_eq(n,110))) {
-                    current_statement_begin__ = 57;
+                    current_statement_begin__ = 56;
                     if (pstream__) {
                         stan_print(pstream__,"Nbin: ");
                         stan_print(pstream__,n);
@@ -338,7 +332,7 @@ public:
                     }
                 }
             }
-            current_statement_begin__ = 59;
+            current_statement_begin__ = 58;
             lp_accum__.add(poisson_log<propto__>(count, pred));
             }
 

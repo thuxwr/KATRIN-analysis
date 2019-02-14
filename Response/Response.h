@@ -250,10 +250,11 @@ class Response
 			return myring.GetNSegments() * myring.GetSegment(0).GetA();
 		}
 
-		double GetSegmentA(int npixel) {
+		double GetSegmentA(int npixel, int slice=-1) {
 			int iRing = 0;
 			if(npixel>3) iRing = (npixel+8)/12;
-			SSCRing& myring = myWGTS->GetSlice(_slice).GetRing(iRing);
+			if(slice<0) slice = _slice;
+			SSCRing& myring = myWGTS->GetSlice(slice).GetRing(iRing);
 			return myring.GetSegment(0).GetA();
 		}
 

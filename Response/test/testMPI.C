@@ -40,14 +40,21 @@ KATRIN Katrin;
 	res.SetupScatParameters(0.204, 0.0556, 1.85, 12.5, 12.6, 14.3, 3.4e-18);
 	res.SetupResponse(Katrin.B_A, Katrin.B_S, Katrin.B_max);
 
+	if(rank==0) {
+	cout << "Finish response. Start efficiency." << endl;
 	double* efficiency = new double[148];
 	for(int i=0; i<148; i++) efficiency[i] = 1;
-	res.SetupEfficiency(efficiency);
+		res.SetupEfficiency(efficiency);
 
-	if(rank==0) {
-		res.GetResponse()->SetName("haha");
-		res.GetResponse()->SaveAs("hehe.root");
+	TH1D* th = new TH1D("haha", "haha", 10000,0,100);
+	for(int bin=1; bin<=10000; bin++) th->SetBinContent(bin, res.GetResponse(th->GetBinCenter(bin), 0));
+
+	th->SaveAs("hehe.root");
 	}
+//	if(rank==0) {
+//		res.GetResponse()->SetName("haha");
+//		res.GetResponse()->SaveAs("hehe.root");
+//	}
 	MPI_Finalize();
 
 	//for(int i=0; i<10000; i++) {
