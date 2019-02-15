@@ -18,6 +18,7 @@
 #include "KIIdle.h"
 #include "KTree.h"
 #include "TMath.h"
+#include "../Configure/Configure.h"
 
 using namespace std;
 using namespace katrin;
@@ -39,6 +40,7 @@ class Data
 				GetDataIdle();
 				DumpData();
 			}
+			Cut();
 		}
 
 		~Data(){}
@@ -47,10 +49,39 @@ class Data
 			DataSet = datasetname;
 		}
 
+		void Cut() { // Data selection, and refresh dataset.
+			int subruncount = 0;
+			for(int subrun=0; subrun<NSubrun; subrun++) {
+				/* Contain all required slow control data. */
+				if(IsNaN(TritiumPurity[subrun]) || TritiumPurity[subrun]<0) continue;
+				if(IsNaN(ColumnDensity[subrun]) || ColumnDensity[subrun]<0) continue;
+
+				/* Stable gas flow. */
+				if(Abs(ColumnDensity[subrun]-4.46e21)>5e18) continue;
+
+				/* Energy in [-100, 50] eV. */
+				if(Voltage[subrun]<Katrin.E_0_center-100 || Voltage[subrun]>Katrin.E_0_center+50) continue;
+
+				/* Copy selected data. */
+				TritiumPurity[subruncount] = TritiumPurity[subrun];
+				ColumnDensity[subruncount] = ColumnDensity[subrun];
+				Voltage[subruncount] = Voltage[subrun];
+				for(int npixel=0; npixel<NPixels; npixel++) {
+					Efficiency[subruncount][npixel] = Efficiency[subrun][npixel];
+					Livetime[subruncount][npixel] = Livetime[subrun][npixel];
+					EventCount[subruncount][npixel] = EventCount[subruncount][npixel];
+				}
+				subruncount ++;
+			}
+			NSubrun = subruncount;
+		}
+
+
 		int GetSubrunNum() { return NSubrun; }
 
 	private:
 		KIIdle idle;
+		KATRIN Katrin;
 		string DataSet;
 		string path;
 		int NSubrun;

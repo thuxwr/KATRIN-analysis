@@ -12,6 +12,8 @@
 #include "../Spectrum/Spectrum.h"
 #include "../Configure/Configure.h"
 #include "../Response/ResponseMPI.h"
+#include "../Data/GetDataFile.h"
+#include "TMath.h"
 #include "mpi.h"
 #include "TF1.h"
 
@@ -28,8 +30,16 @@ class DetectMPI
 			_mass = -1;
 			_endpoint = 0;
 			broadenspec = new TH1D;
-			//response.SetZ(z);
-			//response.SetSlice(50);
+			int initflag;
+			MPI_Initialized(&initflag);
+			if(!initflag) MPI_Init(NULL, NULL);
+			MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+			MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+			/* Determine how many subruns should be arranged for a single core. */
+			njobs = CeilNint(((double)data.GetSubrunNum())/size);
+			detspeclocal = new double[data.GetSubrunNum()];
+
 		}
 
 		~DetectMPI() {
@@ -53,20 +63,10 @@ class DetectMPI
 			IsUpdate = IsUpdate && response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 		}
 
-		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double** efficiency) { // For discrete measurement, with nvoltage thresholds each being voltage[i].
-			if(mass!=_mass || endpoint!=_endpoint) {
-				delete broadenspec;
-				TH1D* decayspec = spec.decayspec(mass, endpoint);
-				broadenspec = Broaden(decayspec);
-				delete decayspec;
-			}
-
-			double* detspec = new double[nvoltage];
+		double* DetSpec(double mass, double endpoint) { // For discrete measurement.
+			double* detspec = new double[njobs*size];
 			/* Check whether this is root process(rank=0) and call MPI setup. */
-			int currentrank, size;
-			MPI_Comm_rank(MPI_COMM_WORLD, &currentrank);
-			MPI_Comm_size(MPI_COMM_WORLD, &size);
-			if(currentrank!=0) {
+			if(rank!=0) {
 				cout << "This is not root process. MPI failed!" << endl;
 				exit(0);
 			}
@@ -74,15 +74,13 @@ class DetectMPI
 			/* Send all parameters to other cores. */
 			cout << "Start setting up response fcn." << endl;
 			if(!IsUpdate) {
-				double pars[10] = {_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
-				//for(int i=1; i<size; i++) MPI_Send(pars, 10, MPI_DOUBLE, i, 1, MPI_COMM_WORLD);
-				MPI_Bcast(pars, 10, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+				double pars[11] = {1, _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
+				MPI_Bcast(pars, 11, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 				response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 				response.SetupResponse(_B_A, _B_S, _B_max);
 			}
 
 			/* Normalization. Not suitable for FirstTritium! */
-			double scale = 1;
 			/*
 			{
 				double content = 0;
@@ -95,18 +93,14 @@ class DetectMPI
 			}
 			*/
 
-			for(int subrun=0; subrun<nvoltage; subrun++) {
-				/* Setup detector efficiency for subruns. */
-				response.SetupEfficiency(efficiency[subrun]);
-
-				double content = 0;
-				double U = voltage[subrun];
-				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
-					double E = broadenspec->GetBinCenter(i);
-					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
-				}
-				detspec[subrun] = content * scale;
+			/* Distributed calculation for all subruns. */
+			if(true) {
+				double pars[11] = {-1, mass, endpoint, 0, 0, 0, 0, 0, 0, 0, 0};
+				MPI_Bcast(pars, 11, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 			}
+
+			EfficiencyDistributed(rank, mass, endpoint);
+			MPI_Gather(detspeclocal, njobs, MPI_DOUBLE, detspec, njobs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 			cout << "End subrun. " << endl;
 
 			IsUpdate = true;
@@ -117,26 +111,65 @@ class DetectMPI
 		void SetSlice(int iSlice) { response.SetSlice(iSlice); }
 
 		void AssociateRun() {
-			double pars[10];
+			double pars[11];
 			//MPI_Recv(pars, 10, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-			MPI_Bcast(pars, 10, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-			response.SetupScatParameters(pars[0], pars[1], pars[2], pars[3], pars[4], pars[5], pars[6]);
-			response.SetupResponse(pars[7], pars[8], pars[9]);
+			MPI_Bcast(pars, 11, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			if(pars[0]>0) { //Setup response.
+				response.SetupScatParameters(pars[1], pars[2], pars[3], pars[4], pars[5], pars[6], pars[7]);
+				response.SetupResponse(pars[8], pars[9], pars[10]);
+			}
+			else { //Setup efficiency. pars: 1.mass, 2.endpoint.
+				EfficiencyDistributed(rank, pars[1], pars[2]);
+				MPI_Gather(detspeclocal, njobs, MPI_DOUBLE, detspec, njobs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			}
 		}
 
 	private:
 		static DetectMPI* detect;
 		KATRIN katrin;
+		Data data;
 		Spectrum spec;
 		ResponseMPI response;
 		double** trans; // transition matrix for i'th bin in decay spectrum and j'th bin in broadened spectrum
 		int nsize;
+		int size;
+		int njobs;
 		double core_E_cms, core_bv, core_T_bt;
 		TH1D* broadenspec;
 		double _mass, _endpoint;
 		double _B_A, _B_S, _B_max;
 		double _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS;
 		bool IsUpdate;
+		int rank;
+		double* detspeclocal;
+
+		void EfficiencyDistributed(int nrank, double mass, double endpoint) {
+			/* Setup broadened spectrum according to mass and endpoint. */
+			if(mass!=_mass || endpoint!=_endpoint) {
+				delete broadenspec;
+				TH1D* decayspec = spec.decayspec(mass, endpoint);
+				broadenspec = Broaden(decayspec);
+				delete decayspec;
+				_mass = mass; _endpoint = endpoint;
+			}
+
+			for(int subrun=nrank*njobs; subrun<(nrank+1)*njobs; subrun++) {
+				if(subrun>=data.GetSubrunNum()) {
+					detspeclocal[subrun-nrank*njobs] = 0;
+					continue;
+				}
+
+				response.SetupEfficiency(efficiency[subrun]);
+
+				double content = 0;
+				double U = data.Voltage[subrun];
+				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
+					double E = broadenspec->GetBinCenter(i);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
+				}
+				detspeclocal[subrun-nrank*njobs] = content;
+			}
+		}
 
 		double sigma_E(double E_cms, double bv, double T_bt) {
 			return Sqrt((E_cms + 2*m_e) * E_cms * k_B * T_bt / M_T2);

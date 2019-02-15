@@ -8,7 +8,9 @@
 #include <stdio.h>
 
 int main(int argc, const char* argv[]) {
-	MPI_Init(NULL, NULL);
+	int initflag;
+	MPI_Initialized(&initflag);
+	if(!initflag) MPI_Init(NULL, NULL);
 	char* Argv = new char[40];
 	strcpy(Argv, argv[0]);
 	detect.initialize(argc, &Argv);

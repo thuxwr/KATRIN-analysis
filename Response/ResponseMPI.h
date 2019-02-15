@@ -61,17 +61,15 @@ class ResponseMPI
 				local_response[pixel*response.NPoints+npoint] = response.response[pixel][npoint];
 
 			response_gather = new double[size*response.NPoints*NPixels];
-			MPI_Gather(local_response, response.NPoints*NPixels, MPI_DOUBLE, response_gather, response.NPoints*NPixels, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+			MPI_Allgather(local_response, response.NPoints*NPixels, MPI_DOUBLE, response_gather, response.NPoints*NPixels, MPI_DOUBLE, MPI_COMM_WORLD);
 
-			if(rank==0) {
-				for(int pixel=0; pixel<NPixels; pixel++) {
-					delete response_pixel[pixel];
-					response_pixel[pixel] = new double[response.NPoints];
-					for(int npoint=0; npoint<response.NPoints; npoint++) {
-						response_pixel[pixel][npoint] = 0;
-						for(int slice=0; slice<nslice; slice++)
-							response_pixel[pixel][npoint] += response_gather[slice*response.NPoints*NPixels+pixel*response.NPoints+npoint] * response.GetSegmentA(pixel, slice) * response.GetColumnDensity(slice);
-					}
+			for(int pixel=0; pixel<NPixels; pixel++) {
+				delete response_pixel[pixel];
+				response_pixel[pixel] = new double[response.NPoints];
+				for(int npoint=0; npoint<response.NPoints; npoint++) {
+					response_pixel[pixel][npoint] = 0;
+					for(int slice=0; slice<nslice; slice++)
+						response_pixel[pixel][npoint] += response_gather[slice*response.NPoints*NPixels+pixel*response.NPoints+npoint] * response.GetSegmentA(pixel, slice) * response.GetColumnDensity(slice);
 				}
 			}
 		}
