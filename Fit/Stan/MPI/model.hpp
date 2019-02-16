@@ -18,7 +18,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model.stan");
-    reader.add_event(71, 69, "end", "model.stan");
+    reader.add_event(73, 71, "end", "model.stan");
     return reader;
 }
 
@@ -26,8 +26,8 @@ template <typename T0__>
 std::vector<typename boost::math::tools::promote_args<T0__>::type>
 signal(const std::vector<T0__>& pars, std::ostream* pstream__);
 
-double
-bkg(std::ostream* pstream__);
+std::vector<double>
+GetBkg(std::ostream* pstream__);
 
 std::vector<int>
 GetData(std::ostream* pstream__);
@@ -39,6 +39,20 @@ class KATRIN : public prob_grad {
 private:
     int nsubrun;
     vector<int> count;
+    vector<double> bkg;
+    double mass;
+    double endpoint;
+    double e1;
+    double B_A;
+    double B_S;
+    double B_max;
+    double A1;
+    double A2;
+    double w1;
+    double w2;
+    double e2;
+    double sigma;
+    vector<double> pars;
 public:
     KATRIN(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -87,18 +101,90 @@ public:
             count = std::vector<int>(nsubrun,int(0));
             stan::math::fill(count, std::numeric_limits<int>::min());
             stan::math::assign(count,GetData(pstream__));
+            current_statement_begin__ = 17;
+            validate_non_negative_index("bkg", "nsubrun", nsubrun);
+            bkg = std::vector<double>(nsubrun,double(0));
+            stan::math::fill(bkg,DUMMY_VAR__);
+            stan::math::assign(bkg,GetBkg(pstream__));
+            current_statement_begin__ = 19;
+            mass = double(0);
+            stan::math::fill(mass,DUMMY_VAR__);
+            stan::math::assign(mass,0);
+            current_statement_begin__ = 20;
+            endpoint = double(0);
+            stan::math::fill(endpoint,DUMMY_VAR__);
+            stan::math::assign(endpoint,18574);
+            current_statement_begin__ = 21;
+            e1 = double(0);
+            stan::math::fill(e1,DUMMY_VAR__);
+            stan::math::assign(e1,12.6);
+            current_statement_begin__ = 22;
+            B_A = double(0);
+            stan::math::fill(B_A,DUMMY_VAR__);
+            stan::math::assign(B_A,0.00026800000000000001);
+            current_statement_begin__ = 23;
+            B_S = double(0);
+            stan::math::fill(B_S,DUMMY_VAR__);
+            stan::math::assign(B_S,2.52);
+            current_statement_begin__ = 24;
+            B_max = double(0);
+            stan::math::fill(B_max,DUMMY_VAR__);
+            stan::math::assign(B_max,4.2000000000000002);
+            current_statement_begin__ = 25;
+            A1 = double(0);
+            stan::math::fill(A1,DUMMY_VAR__);
+            stan::math::assign(A1,0.20399999999999999);
+            current_statement_begin__ = 26;
+            A2 = double(0);
+            stan::math::fill(A2,DUMMY_VAR__);
+            stan::math::assign(A2,0.055599999999999997);
+            current_statement_begin__ = 27;
+            w1 = double(0);
+            stan::math::fill(w1,DUMMY_VAR__);
+            stan::math::assign(w1,1.8500000000000001);
+            current_statement_begin__ = 28;
+            w2 = double(0);
+            stan::math::fill(w2,DUMMY_VAR__);
+            stan::math::assign(w2,12.5);
+            current_statement_begin__ = 29;
+            e2 = double(0);
+            stan::math::fill(e2,DUMMY_VAR__);
+            stan::math::assign(e2,14.300000000000001);
+            current_statement_begin__ = 30;
+            sigma = double(0);
+            stan::math::fill(sigma,DUMMY_VAR__);
+            stan::math::assign(sigma,3.3999999999999999);
+            current_statement_begin__ = 31;
+            validate_non_negative_index("pars", "12", 12);
+            pars = std::vector<double>(12,double(0));
+            stan::math::fill(pars,DUMMY_VAR__);
+            stan::math::assign(pars,static_cast<std::vector<double> >(stan::math::array_builder<double >().add(mass).add(endpoint).add(B_A).add(B_S).add(B_max).add(A1).add(A2).add(w1).add(w2).add(e1).add(e2).add((sigma * 1.0000000000000001e-18)).array()));
 
 
             // validate transformed data
             current_statement_begin__ = 15;
             current_statement_begin__ = 16;
+            current_statement_begin__ = 17;
+            current_statement_begin__ = 19;
+            current_statement_begin__ = 20;
+            current_statement_begin__ = 21;
+            current_statement_begin__ = 22;
+            current_statement_begin__ = 23;
+            current_statement_begin__ = 24;
+            current_statement_begin__ = 25;
+            current_statement_begin__ = 26;
+            current_statement_begin__ = 27;
+            current_statement_begin__ = 28;
+            current_statement_begin__ = 29;
+            current_statement_begin__ = 30;
+            current_statement_begin__ = 31;
 
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 22;
+            current_statement_begin__ = 37;
             ++num_params_r__;
-            current_statement_begin__ = 23;
+            current_statement_begin__ = 38;
             ++num_params_r__;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -128,7 +214,7 @@ public:
         double A_sig(0);
         A_sig = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0,1000000.0,A_sig);
+            writer__.scalar_lub_unconstrain(0,10000000.0,A_sig);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_sig: ") + e.what());
         }
@@ -141,7 +227,7 @@ public:
         double A_bkg(0);
         A_bkg = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0,10,A_bkg);
+            writer__.scalar_lub_unconstrain(0,100,A_bkg);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_bkg: ") + e.what());
         }
@@ -182,16 +268,16 @@ public:
             local_scalar_t__ A_sig;
             (void) A_sig;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_sig = in__.scalar_lub_constrain(0,1000000.0,lp__);
+                A_sig = in__.scalar_lub_constrain(0,10000000.0,lp__);
             else
-                A_sig = in__.scalar_lub_constrain(0,1000000.0);
+                A_sig = in__.scalar_lub_constrain(0,10000000.0);
 
             local_scalar_t__ A_bkg;
             (void) A_bkg;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_bkg = in__.scalar_lub_constrain(0,10,lp__);
+                A_bkg = in__.scalar_lub_constrain(0,100,lp__);
             else
-                A_bkg = in__.scalar_lub_constrain(0,10);
+                A_bkg = in__.scalar_lub_constrain(0,100);
 
 
             // transformed parameters
@@ -205,120 +291,30 @@ public:
 
             // model body
             {
-            current_statement_begin__ = 36;
-            local_scalar_t__ mass;
-            (void) mass;  // dummy to suppress unused var warning
-
-            stan::math::initialize(mass, DUMMY_VAR__);
-            stan::math::fill(mass,DUMMY_VAR__);
-            stan::math::assign(mass,0);
-            current_statement_begin__ = 37;
-            local_scalar_t__ endpoint;
-            (void) endpoint;  // dummy to suppress unused var warning
-
-            stan::math::initialize(endpoint, DUMMY_VAR__);
-            stan::math::fill(endpoint,DUMMY_VAR__);
-            stan::math::assign(endpoint,18574);
-            current_statement_begin__ = 38;
-            local_scalar_t__ e1;
-            (void) e1;  // dummy to suppress unused var warning
-
-            stan::math::initialize(e1, DUMMY_VAR__);
-            stan::math::fill(e1,DUMMY_VAR__);
-            stan::math::assign(e1,12.6);
-            current_statement_begin__ = 39;
-            local_scalar_t__ B_A;
-            (void) B_A;  // dummy to suppress unused var warning
-
-            stan::math::initialize(B_A, DUMMY_VAR__);
-            stan::math::fill(B_A,DUMMY_VAR__);
-            stan::math::assign(B_A,0.00026800000000000001);
-            current_statement_begin__ = 40;
-            local_scalar_t__ B_S;
-            (void) B_S;  // dummy to suppress unused var warning
-
-            stan::math::initialize(B_S, DUMMY_VAR__);
-            stan::math::fill(B_S,DUMMY_VAR__);
-            stan::math::assign(B_S,2.52);
-            current_statement_begin__ = 41;
-            local_scalar_t__ B_max;
-            (void) B_max;  // dummy to suppress unused var warning
-
-            stan::math::initialize(B_max, DUMMY_VAR__);
-            stan::math::fill(B_max,DUMMY_VAR__);
-            stan::math::assign(B_max,4.2000000000000002);
-            current_statement_begin__ = 42;
-            local_scalar_t__ A1;
-            (void) A1;  // dummy to suppress unused var warning
-
-            stan::math::initialize(A1, DUMMY_VAR__);
-            stan::math::fill(A1,DUMMY_VAR__);
-            stan::math::assign(A1,0.20399999999999999);
-            current_statement_begin__ = 43;
-            local_scalar_t__ A2;
-            (void) A2;  // dummy to suppress unused var warning
-
-            stan::math::initialize(A2, DUMMY_VAR__);
-            stan::math::fill(A2,DUMMY_VAR__);
-            stan::math::assign(A2,0.055599999999999997);
-            current_statement_begin__ = 44;
-            local_scalar_t__ w1;
-            (void) w1;  // dummy to suppress unused var warning
-
-            stan::math::initialize(w1, DUMMY_VAR__);
-            stan::math::fill(w1,DUMMY_VAR__);
-            stan::math::assign(w1,1.8500000000000001);
-            current_statement_begin__ = 45;
-            local_scalar_t__ w2;
-            (void) w2;  // dummy to suppress unused var warning
-
-            stan::math::initialize(w2, DUMMY_VAR__);
-            stan::math::fill(w2,DUMMY_VAR__);
-            stan::math::assign(w2,12.5);
-            current_statement_begin__ = 46;
-            local_scalar_t__ e2;
-            (void) e2;  // dummy to suppress unused var warning
-
-            stan::math::initialize(e2, DUMMY_VAR__);
-            stan::math::fill(e2,DUMMY_VAR__);
-            stan::math::assign(e2,14.300000000000001);
-            current_statement_begin__ = 47;
-            local_scalar_t__ sigma;
-            (void) sigma;  // dummy to suppress unused var warning
-
-            stan::math::initialize(sigma, DUMMY_VAR__);
-            stan::math::fill(sigma,DUMMY_VAR__);
-            stan::math::assign(sigma,3.3999999999999999);
-            current_statement_begin__ = 48;
-            validate_non_negative_index("pars", "12", 12);
-            vector<local_scalar_t__> pars(12);
-            stan::math::initialize(pars, DUMMY_VAR__);
-            stan::math::fill(pars,DUMMY_VAR__);
-            stan::math::assign(pars,static_cast<std::vector<local_scalar_t__> >(stan::math::array_builder<local_scalar_t__ >().add(mass).add(endpoint).add(B_A).add(B_S).add(B_max).add(A1).add(A2).add(w1).add(w2).add(e1).add(e2).add((sigma * 1.0000000000000001e-18)).array()));
-            current_statement_begin__ = 49;
+            current_statement_begin__ = 51;
             validate_non_negative_index("sig", "nsubrun", nsubrun);
             vector<local_scalar_t__> sig(nsubrun);
             stan::math::initialize(sig, DUMMY_VAR__);
             stan::math::fill(sig,DUMMY_VAR__);
             stan::math::assign(sig,signal(pars, pstream__));
-            current_statement_begin__ = 50;
+            current_statement_begin__ = 52;
             validate_non_negative_index("pred", "nsubrun", nsubrun);
             vector<local_scalar_t__> pred(nsubrun);
             stan::math::initialize(pred, DUMMY_VAR__);
             stan::math::fill(pred,DUMMY_VAR__);
 
 
-            current_statement_begin__ = 52;
+            current_statement_begin__ = 54;
             for (int n = 1; n <= nsubrun; ++n) {
 
-                current_statement_begin__ = 53;
+                current_statement_begin__ = 55;
                 stan::model::assign(pred, 
                             stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
-                            ((get_base1(sig,n,"sig",1) * A_sig) + (A_bkg * bkg(pstream__))), 
+                            ((get_base1(sig,n,"sig",1) * A_sig) + (A_bkg * get_base1(bkg,n,"bkg",1))), 
                             "assigning variable pred");
-                current_statement_begin__ = 56;
-                if (as_bool(logical_eq(n,110))) {
-                    current_statement_begin__ = 56;
+                current_statement_begin__ = 58;
+                if (as_bool(logical_lte(n,30))) {
+                    current_statement_begin__ = 58;
                     if (pstream__) {
                         stan_print(pstream__,"Nbin: ");
                         stan_print(pstream__,n);
@@ -332,7 +328,7 @@ public:
                     }
                 }
             }
-            current_statement_begin__ = 58;
+            current_statement_begin__ = 60;
             lp_accum__.add(poisson_log<propto__>(count, pred));
             }
 
@@ -390,8 +386,8 @@ public:
         static const char* function__ = "KATRIN_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double A_sig = in__.scalar_lub_constrain(0,1000000.0);
-        double A_bkg = in__.scalar_lub_constrain(0,10);
+        double A_sig = in__.scalar_lub_constrain(0,10000000.0);
+        double A_bkg = in__.scalar_lub_constrain(0,100);
         vars__.push_back(A_sig);
         vars__.push_back(A_bkg);
 

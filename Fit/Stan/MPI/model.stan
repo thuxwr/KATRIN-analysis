@@ -1,6 +1,6 @@
 functions {
 	real[] signal(real[] pars);
-	real bkg();
+	real[] GetBkg();
 	int[] GetData();
 	int GetSubrunNum();
 }
@@ -14,25 +14,8 @@ data {
 transformed data {
 	int nsubrun = GetSubrunNum();
 	int count[nsubrun] = GetData();
-}
+	real bkg[nsubrun] = GetBkg();
 
-parameters {
-	//real<lower=0, upper=2> mass;
-	//real<lower=18572, upper=18576> endpoint;
-	real<lower=0, upper=1e6> A_sig;
-	real<lower=0, upper=10> A_bkg;
-	//real<lower=2.63, upper=2.73> B_A;
-	//real<lower=24950, upper=25450> B_S;
-	//real<lower=41500, upper=42500> B_max;
-	//real<lower=0.199, upper=0.208> A1;
-	//real<lower=0.0541, upper=0.0571> A2;
-	//real<lower=1.75, upper=1.95> w1;
-	//real<lower=12, upper=13> w2;
-	//real<lower=14.2, upper=14.4> e2;
-	//real<lower=3.05, upper=3.75> sigma;
-}
-
-model {
 	real mass = 0;
 	real endpoint = 18574;
 	real e1 = 12.6;
@@ -46,14 +29,33 @@ model {
 	real e2 = 14.3;
 	real sigma = 3.4;
 	real pars[12] = {mass, endpoint, B_A, B_S, B_max, A1, A2, w1, w2, e1, e2, sigma*1e-18};
+}
+
+parameters {
+	//real<lower=0, upper=2> mass;
+	//real<lower=18572, upper=18576> endpoint;
+	real<lower=0, upper=1e7> A_sig;
+	real<lower=0, upper=100> A_bkg;
+	//real<lower=2.63, upper=2.73> B_A;
+	//real<lower=24950, upper=25450> B_S;
+	//real<lower=41500, upper=42500> B_max;
+	//real<lower=0.199, upper=0.208> A1;
+	//real<lower=0.0541, upper=0.0571> A2;
+	//real<lower=1.75, upper=1.95> w1;
+	//real<lower=12, upper=13> w2;
+	//real<lower=14.2, upper=14.4> e2;
+	//real<lower=3.05, upper=3.75> sigma;
+}
+
+model {
 	real sig[nsubrun] = signal(pars);
 	real pred[nsubrun];
 	//vector[nbins+2] par_std;
 	for(n in 1:nsubrun) {
-		pred[n] = sig[n] * A_sig + A_bkg * bkg();
+		pred[n] = sig[n] * A_sig + A_bkg * bkg[n];
 		//target += (rate[n]-pred[n]) * (pred[n]-rate[n]) / error[n] / error[n];
 		//par_std[n] = (rate[n] - pred[n])/error[n];
-		if(n==110) print("Nbin: ", n, " Pred: ", pred[n], " count: ", count[n], " A_sig: ", A_sig);
+		if(n<=30) print("Nbin: ", n, " Pred: ", pred[n], " count: ", count[n], " A_sig: ", A_sig);
 	}
 	count ~ poisson(pred);
 //	B_A ~ normal(2.68, 0.01);

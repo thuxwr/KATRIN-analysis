@@ -39,6 +39,7 @@ class DetectMPI
 			/* Determine how many subruns should be arranged for a single core. */
 			njobs = CeilNint(((double)data.GetSubrunNum())/size);
 			detspeclocal = new double[data.GetSubrunNum()];
+			detspec = new double[1];
 
 		}
 
@@ -64,7 +65,8 @@ class DetectMPI
 		}
 
 		double* DetSpec(double mass, double endpoint) { // For discrete measurement.
-			double* detspec = new double[njobs*size];
+			delete detspec;
+			detspec = new double[njobs*size];
 			/* Check whether this is root process(rank=0) and call MPI setup. */
 			if(rank!=0) {
 				cout << "This is not root process. MPI failed!" << endl;
@@ -72,7 +74,6 @@ class DetectMPI
 			}
 
 			/* Send all parameters to other cores. */
-			cout << "Start setting up response fcn." << endl;
 			if(!IsUpdate) {
 				double pars[11] = {1, _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
 				MPI_Bcast(pars, 11, MPI_DOUBLE, 0, MPI_COMM_WORLD);
@@ -101,7 +102,6 @@ class DetectMPI
 
 			EfficiencyDistributed(rank, mass, endpoint);
 			MPI_Gather(detspeclocal, njobs, MPI_DOUBLE, detspec, njobs, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-			cout << "End subrun. " << endl;
 
 			IsUpdate = true;
 			return detspec;
@@ -124,6 +124,31 @@ class DetectMPI
 			}
 		}
 
+		double test(double voltage, double mass=0, double endpoint=18574) {
+			if(mass!=_mass || endpoint!=_endpoint) {
+				delete broadenspec;
+				TH1D* decayspec = spec.decayspec(mass, endpoint);
+				broadenspec = Broaden(decayspec);
+				delete decayspec;
+				_mass = mass; _endpoint = endpoint;
+			}
+
+			double* effi = new double[150];
+			for(int i=0; i<150; i++) effi[i] = 1;
+			response.SetupEfficiency(effi);
+				double content = 0;
+				double U = voltage;
+				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
+					double E = broadenspec->GetBinCenter(i);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
+				}
+			return content;
+		}
+
+
+
+
+
 	private:
 		static DetectMPI* detect;
 		KATRIN katrin;
@@ -142,6 +167,7 @@ class DetectMPI
 		bool IsUpdate;
 		int rank;
 		double* detspeclocal;
+		double* detspec;
 
 		void EfficiencyDistributed(int nrank, double mass, double endpoint) {
 			/* Setup broadened spectrum according to mass and endpoint. */
@@ -159,7 +185,7 @@ class DetectMPI
 					continue;
 				}
 
-				response.SetupEfficiency(efficiency[subrun]);
+				response.SetupEfficiency(data.Efficiency[subrun]);
 
 				double content = 0;
 				double U = data.Voltage[subrun];

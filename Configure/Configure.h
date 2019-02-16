@@ -9,7 +9,7 @@
 
 #define NfinalstateMAX 500 //Discretized final state number
 #define NbinsDecaySpec 800 //Nbins for decay spectrum
-#define LowBoundary -35 //Low boundary for decay spectrum respect to endpoint, in unit:eV
+#define LowBoundary -155 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
 
 #define NVoltageMax 10000 //Nbins for detected spectrum

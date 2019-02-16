@@ -132,7 +132,7 @@ class Response
 				}
 
 				double binwidth = 0.2;
-				for(double x=9.6; x<100; x+=binwidth) { // Should consider inelastic scattering.
+				for(double x=9.6; x<120; x+=binwidth) { // Should consider inelastic scattering.
 					if(!IsXCalculated) X[npoint] = x;
 					double ScatResponse = 0;
 					for(double epsilon=0; epsilon<x; epsilon+=binwidth) {

@@ -68,8 +68,8 @@ class Data
 				Voltage[subruncount] = Voltage[subrun];
 				for(int npixel=0; npixel<NPixels; npixel++) {
 					Efficiency[subruncount][npixel] = Efficiency[subrun][npixel];
-					Livetime[subruncount][npixel] = Livetime[subrun][npixel];
-					EventCount[subruncount][npixel] = EventCount[subruncount][npixel];
+					LiveTime[subruncount][npixel] = LiveTime[subrun][npixel];
+					EventCount[subruncount][npixel] = EventCount[subrun][npixel];
 				}
 				subruncount ++;
 			}

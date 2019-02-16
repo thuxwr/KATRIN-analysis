@@ -16,66 +16,28 @@ Data data;
 
 namespace KATRIN_namespace {
 
-/* Data selection. */
-int nvoltage;
-double* voltage;
-double** efficiency;
-double** livetime;
-
 using namespace std;
 
-double bkg(ostream* pstream) { return Katrin.Bkg_rate; }
-int GetSubrunNum(ostream* pstream) { 
-	int subruncount = 0;
-	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
-		/* Cut 1: Contain necessary data. */
-		if(TMath::IsNaN(data.TritiumPurity[subrun]) || data.TritiumPurity[subrun]<0) continue;
-		if(TMath::IsNaN(data.ColumnDensity[subrun]) || data.ColumnDensity[subrun]<0) continue;
-
-		/* Cut 2: Stable gas flow. */
-		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
-
-		/* Cut 3: Energy in [-100, 50] eV. */
-		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
-
-		subruncount ++;
-	}
-	return subruncount;
+vector<double> GetBkg(ostream* pstream) { 
+	vector<double> scaled_bkg = {};
+	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) 
+		scaled_bkg.push_back(Katrin.Bkg_rate * data.LiveTime[subrun][0]);
+	return scaled_bkg;
 }
 
-vector<int> GetData(ostream* pstream) {
-	nvoltage = 0;
-	voltage = new double[data.GetSubrunNum()];
-	efficiency = new double*[data.GetSubrunNum()];
-	livetime = new double*[data.GetSubrunNum()];
+int GetSubrunNum(ostream* pstream) { return data.GetSubrunNum(); }
 
+vector<int> GetData(ostream* pstream) {
 	/* Loop over subruns. */
 	vector<int> selected_data = {};
 	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
-		/* Cut 1: Contain necessary data. */
-		if(TMath::IsNaN(data.TritiumPurity[subrun]) || data.TritiumPurity[subrun]<0) continue;
-		if(TMath::IsNaN(data.ColumnDensity[subrun]) || data.ColumnDensity[subrun]<0) continue;
-
-		/* Cut 2: Stable gas flow. */
-		if(Abs(data.ColumnDensity[subrun]-4.46e21)>5e18) continue;
-
-		/* Cut 3: Energy in [-100, 50] eV. */
-		if(data.Voltage[subrun]<Katrin.E_0_center-100 || data.Voltage[subrun]>Katrin.E_0_center+50) continue;
-
 		int count = 0;
-		efficiency[nvoltage] = new double[NPixels];
-		livetime[nvoltage] = new double[NPixels];
 		for(int npixel=0; npixel<NPixels; npixel++) {
 			if(data.Efficiency[subrun][npixel]<=0) continue;
 			count += data.EventCount[subrun][npixel];
-			efficiency[nvoltage][npixel] = data.Efficiency[subrun][npixel];
-			livetime[nvoltage][npixel] = data.LiveTime[subrun][npixel];
 		}
 
 		selected_data.push_back(count);
-
-		voltage[nvoltage] = data.Voltage[subrun];
-		nvoltage ++;
 	}
 
 	return selected_data;
@@ -98,12 +60,12 @@ inline vector<double> signal(const vector<double>& pars, ostream* pstream) {
 	vector<double> entries = {};
 	detect.SetScatParams(A1, A2, w1, w2, e1, e2, sigma);
 	detect.SetMagnetic(B_A, B_S, B_max);
-	double* detspec = detect.DetSpec(mass, endpoint, nvoltage, voltage, efficiency);
+	double* detspec = detect.DetSpec(mass, endpoint);
 
-	for(int subrun=0; subrun<nvoltage; subrun++) {
-		entries.push_back(detspec[subrun] * livetime[subrun][0]); //Livetime is the same for all pixels.
+	for(int subrun=0; subrun<data.GetSubrunNum(); subrun++) {
+		entries.push_back(detspec[subrun] * data.LiveTime[subrun][0] * data.TritiumPurity[subrun]); //Livetime is the same for all pixels.
 	}
-	delete[] detspec;
+//	delete[] detspec;
 	return entries;
 }
 
@@ -144,7 +106,7 @@ inline vector<stan::math::var> signal(const vector<stan::math::var>& pars, ostre
 	}
 
 	vector<stan::math::var> jacob = {};
-	for(int bin=0; bin<nvoltage; bin++) {
+	for(int bin=0; bin<data.GetSubrunNum(); bin++) {
 		double* grad = ChainableStack::instance().memalloc_.alloc_array<double>(pars.size());
 		for(int i=0; i<pars.size(); i++) {
 			if(i<npars) {
