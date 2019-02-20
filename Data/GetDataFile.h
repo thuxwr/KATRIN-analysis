@@ -40,6 +40,7 @@ class Data
 				GetDataIdle();
 				DumpData();
 			}
+			for(int npixel=0; npixel<NPixels; npixel++) goodlist[npixel] = true;
 			Cut();
 		}
 
@@ -68,6 +69,7 @@ class Data
 				Voltage[subruncount] = Voltage[subrun];
 				for(int npixel=0; npixel<NPixels; npixel++) {
 					Efficiency[subruncount][npixel] = Efficiency[subrun][npixel];
+					if(Efficiency[subruncount][npixel]<=0) goodlist[npixel] = false;
 					LiveTime[subruncount][npixel] = LiveTime[subrun][npixel];
 					EventCount[subruncount][npixel] = EventCount[subrun][npixel];
 				}
@@ -78,6 +80,27 @@ class Data
 
 
 		int GetSubrunNum() { return NSubrun; }
+		int GetSubrunCount(int subrun) {
+			int count = 0;
+			for(int npixel=0; npixel<NPixels; npixel++) {
+				if(Efficiency[subrun][npixel]<=0) continue;
+				count += EventCount[subrun][npixel];
+			}
+			return count;
+		}
+
+		double GetSubrunCountCorrected(int subrun) {
+			double count = 0;
+			for(int npixel=0; npixel<NPixels; npixel++) {
+				if(Efficiency[subrun][npixel]<=0) continue;
+				count += EventCount[subrun][npixel]/Efficiency[subrun][npixel];
+			}
+			return count;
+		}
+
+		bool IsPixelBroken(int pixel) {
+			return !goodlist[pixel];
+		}
 
 	private:
 		KIIdle idle;
@@ -85,6 +108,7 @@ class Data
 		string DataSet;
 		string path;
 		int NSubrun;
+		bool goodlist[NPixels];
 
 		bool GetDataFile() {
 			ifstream fin((path+"/data.dat").c_str());

@@ -18,7 +18,7 @@ static int current_statement_begin__;
 stan::io::program_reader prog_reader__() {
     stan::io::program_reader reader;
     reader.add_event(0, 0, "start", "model.stan");
-    reader.add_event(73, 71, "end", "model.stan");
+    reader.add_event(76, 74, "end", "model.stan");
     return reader;
 }
 
@@ -40,8 +40,6 @@ private:
     int nsubrun;
     vector<int> count;
     vector<double> bkg;
-    double mass;
-    double endpoint;
     double e1;
     double B_A;
     double B_S;
@@ -52,7 +50,6 @@ private:
     double w2;
     double e2;
     double sigma;
-    vector<double> pars;
 public:
     KATRIN(stan::io::var_context& context__,
         std::ostream* pstream__ = 0)
@@ -107,58 +104,45 @@ public:
             stan::math::fill(bkg,DUMMY_VAR__);
             stan::math::assign(bkg,GetBkg(pstream__));
             current_statement_begin__ = 19;
-            mass = double(0);
-            stan::math::fill(mass,DUMMY_VAR__);
-            stan::math::assign(mass,0);
-            current_statement_begin__ = 20;
-            endpoint = double(0);
-            stan::math::fill(endpoint,DUMMY_VAR__);
-            stan::math::assign(endpoint,18574);
-            current_statement_begin__ = 21;
             e1 = double(0);
             stan::math::fill(e1,DUMMY_VAR__);
             stan::math::assign(e1,12.6);
-            current_statement_begin__ = 22;
+            current_statement_begin__ = 20;
             B_A = double(0);
             stan::math::fill(B_A,DUMMY_VAR__);
             stan::math::assign(B_A,0.00026800000000000001);
-            current_statement_begin__ = 23;
+            current_statement_begin__ = 21;
             B_S = double(0);
             stan::math::fill(B_S,DUMMY_VAR__);
             stan::math::assign(B_S,2.52);
-            current_statement_begin__ = 24;
+            current_statement_begin__ = 22;
             B_max = double(0);
             stan::math::fill(B_max,DUMMY_VAR__);
             stan::math::assign(B_max,4.2000000000000002);
-            current_statement_begin__ = 25;
+            current_statement_begin__ = 23;
             A1 = double(0);
             stan::math::fill(A1,DUMMY_VAR__);
             stan::math::assign(A1,0.20399999999999999);
-            current_statement_begin__ = 26;
+            current_statement_begin__ = 24;
             A2 = double(0);
             stan::math::fill(A2,DUMMY_VAR__);
             stan::math::assign(A2,0.055599999999999997);
-            current_statement_begin__ = 27;
+            current_statement_begin__ = 25;
             w1 = double(0);
             stan::math::fill(w1,DUMMY_VAR__);
             stan::math::assign(w1,1.8500000000000001);
-            current_statement_begin__ = 28;
+            current_statement_begin__ = 26;
             w2 = double(0);
             stan::math::fill(w2,DUMMY_VAR__);
             stan::math::assign(w2,12.5);
-            current_statement_begin__ = 29;
+            current_statement_begin__ = 27;
             e2 = double(0);
             stan::math::fill(e2,DUMMY_VAR__);
             stan::math::assign(e2,14.300000000000001);
-            current_statement_begin__ = 30;
+            current_statement_begin__ = 28;
             sigma = double(0);
             stan::math::fill(sigma,DUMMY_VAR__);
             stan::math::assign(sigma,3.3999999999999999);
-            current_statement_begin__ = 31;
-            validate_non_negative_index("pars", "12", 12);
-            pars = std::vector<double>(12,double(0));
-            stan::math::fill(pars,DUMMY_VAR__);
-            stan::math::assign(pars,static_cast<std::vector<double> >(stan::math::array_builder<double >().add(mass).add(endpoint).add(B_A).add(B_S).add(B_max).add(A1).add(A2).add(w1).add(w2).add(e1).add(e2).add((sigma * 1.0000000000000001e-18)).array()));
 
 
             // validate transformed data
@@ -175,16 +159,15 @@ public:
             current_statement_begin__ = 26;
             current_statement_begin__ = 27;
             current_statement_begin__ = 28;
-            current_statement_begin__ = 29;
-            current_statement_begin__ = 30;
-            current_statement_begin__ = 31;
 
             // validate, set parameter ranges
             num_params_r__ = 0U;
             param_ranges_i__.clear();
-            current_statement_begin__ = 37;
+            current_statement_begin__ = 33;
             ++num_params_r__;
-            current_statement_begin__ = 38;
+            current_statement_begin__ = 34;
+            ++num_params_r__;
+            current_statement_begin__ = 35;
             ++num_params_r__;
         } catch (const std::exception& e) {
             stan::lang::rethrow_located(e, current_statement_begin__, prog_reader__());
@@ -206,6 +189,19 @@ public:
         std::vector<double> vals_r__;
         std::vector<int> vals_i__;
 
+        if (!(context__.contains_r("endpoint")))
+            throw std::runtime_error("variable endpoint missing");
+        vals_r__ = context__.vals_r("endpoint");
+        pos__ = 0U;
+        context__.validate_dims("initialization", "endpoint", "double", context__.to_vec());
+        double endpoint(0);
+        endpoint = vals_r__[pos__++];
+        try {
+            writer__.scalar_lub_unconstrain(18554,18594,endpoint);
+        } catch (const std::exception& e) { 
+            throw std::runtime_error(std::string("Error transforming variable endpoint: ") + e.what());
+        }
+
         if (!(context__.contains_r("A_sig")))
             throw std::runtime_error("variable A_sig missing");
         vals_r__ = context__.vals_r("A_sig");
@@ -214,7 +210,7 @@ public:
         double A_sig(0);
         A_sig = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0,10000000.0,A_sig);
+            writer__.scalar_lub_unconstrain(20000.0,60000.0,A_sig);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_sig: ") + e.what());
         }
@@ -227,7 +223,7 @@ public:
         double A_bkg(0);
         A_bkg = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(0,100,A_bkg);
+            writer__.scalar_lub_unconstrain(10,70,A_bkg);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_bkg: ") + e.what());
         }
@@ -265,70 +261,88 @@ public:
             // model parameters
             stan::io::reader<local_scalar_t__> in__(params_r__,params_i__);
 
+            local_scalar_t__ endpoint;
+            (void) endpoint;  // dummy to suppress unused var warning
+            if (jacobian__)
+                endpoint = in__.scalar_lub_constrain(18554,18594,lp__);
+            else
+                endpoint = in__.scalar_lub_constrain(18554,18594);
+
             local_scalar_t__ A_sig;
             (void) A_sig;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_sig = in__.scalar_lub_constrain(0,10000000.0,lp__);
+                A_sig = in__.scalar_lub_constrain(20000.0,60000.0,lp__);
             else
-                A_sig = in__.scalar_lub_constrain(0,10000000.0);
+                A_sig = in__.scalar_lub_constrain(20000.0,60000.0);
 
             local_scalar_t__ A_bkg;
             (void) A_bkg;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_bkg = in__.scalar_lub_constrain(0,100,lp__);
+                A_bkg = in__.scalar_lub_constrain(10,70,lp__);
             else
-                A_bkg = in__.scalar_lub_constrain(0,100);
+                A_bkg = in__.scalar_lub_constrain(10,70);
 
 
             // transformed parameters
+            current_statement_begin__ = 48;
+            local_scalar_t__ dendpoint;
+            (void) dendpoint;  // dummy to suppress unused var warning
+
+            stan::math::initialize(dendpoint, DUMMY_VAR__);
+            stan::math::fill(dendpoint,DUMMY_VAR__);
+            stan::math::assign(dendpoint,(endpoint - 18574));
 
 
 
             // validate transformed parameters
+            if (stan::math::is_uninitialized(dendpoint)) {
+                std::stringstream msg__;
+                msg__ << "Undefined transformed parameter: dendpoint";
+                throw std::runtime_error(msg__.str());
+            }
 
             const char* function__ = "validate transformed params";
             (void) function__;  // dummy to suppress unused var warning
+            current_statement_begin__ = 48;
 
             // model body
             {
-            current_statement_begin__ = 51;
+            current_statement_begin__ = 52;
+            local_scalar_t__ mass;
+            (void) mass;  // dummy to suppress unused var warning
+
+            stan::math::initialize(mass, DUMMY_VAR__);
+            stan::math::fill(mass,DUMMY_VAR__);
+            stan::math::assign(mass,0);
+            current_statement_begin__ = 53;
+            validate_non_negative_index("pars", "12", 12);
+            vector<local_scalar_t__> pars(12);
+            stan::math::initialize(pars, DUMMY_VAR__);
+            stan::math::fill(pars,DUMMY_VAR__);
+            stan::math::assign(pars,static_cast<std::vector<local_scalar_t__> >(stan::math::array_builder<local_scalar_t__ >().add(mass).add(endpoint).add(B_A).add(B_S).add(B_max).add(A1).add(A2).add(w1).add(w2).add(e1).add(e2).add((sigma * 1.0000000000000001e-18)).array()));
+            current_statement_begin__ = 54;
             validate_non_negative_index("sig", "nsubrun", nsubrun);
             vector<local_scalar_t__> sig(nsubrun);
             stan::math::initialize(sig, DUMMY_VAR__);
             stan::math::fill(sig,DUMMY_VAR__);
             stan::math::assign(sig,signal(pars, pstream__));
-            current_statement_begin__ = 52;
+            current_statement_begin__ = 55;
             validate_non_negative_index("pred", "nsubrun", nsubrun);
             vector<local_scalar_t__> pred(nsubrun);
             stan::math::initialize(pred, DUMMY_VAR__);
             stan::math::fill(pred,DUMMY_VAR__);
 
 
-            current_statement_begin__ = 54;
+            current_statement_begin__ = 57;
             for (int n = 1; n <= nsubrun; ++n) {
 
-                current_statement_begin__ = 55;
+                current_statement_begin__ = 58;
                 stan::model::assign(pred, 
                             stan::model::cons_list(stan::model::index_uni(n), stan::model::nil_index_list()), 
                             ((get_base1(sig,n,"sig",1) * A_sig) + (A_bkg * get_base1(bkg,n,"bkg",1))), 
                             "assigning variable pred");
-                current_statement_begin__ = 58;
-                if (as_bool(logical_lte(n,30))) {
-                    current_statement_begin__ = 58;
-                    if (pstream__) {
-                        stan_print(pstream__,"Nbin: ");
-                        stan_print(pstream__,n);
-                        stan_print(pstream__," Pred: ");
-                        stan_print(pstream__,get_base1(pred,n,"pred",1));
-                        stan_print(pstream__," count: ");
-                        stan_print(pstream__,get_base1(count,n,"count",1));
-                        stan_print(pstream__," A_sig: ");
-                        stan_print(pstream__,A_sig);
-                        *pstream__ << std::endl;
-                    }
-                }
             }
-            current_statement_begin__ = 60;
+            current_statement_begin__ = 63;
             lp_accum__.add(poisson_log<propto__>(count, pred));
             }
 
@@ -357,14 +371,20 @@ public:
 
     void get_param_names(std::vector<std::string>& names__) const {
         names__.resize(0);
+        names__.push_back("endpoint");
         names__.push_back("A_sig");
         names__.push_back("A_bkg");
+        names__.push_back("dendpoint");
     }
 
 
     void get_dims(std::vector<std::vector<size_t> >& dimss__) const {
         dimss__.resize(0);
         std::vector<size_t> dims__;
+        dims__.resize(0);
+        dimss__.push_back(dims__);
+        dims__.resize(0);
+        dimss__.push_back(dims__);
         dims__.resize(0);
         dimss__.push_back(dims__);
         dims__.resize(0);
@@ -386,8 +406,10 @@ public:
         static const char* function__ = "KATRIN_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double A_sig = in__.scalar_lub_constrain(0,10000000.0);
-        double A_bkg = in__.scalar_lub_constrain(0,100);
+        double endpoint = in__.scalar_lub_constrain(18554,18594);
+        double A_sig = in__.scalar_lub_constrain(20000.0,60000.0);
+        double A_bkg = in__.scalar_lub_constrain(10,70);
+        vars__.push_back(endpoint);
         vars__.push_back(A_sig);
         vars__.push_back(A_bkg);
 
@@ -400,13 +422,22 @@ public:
         (void) DUMMY_VAR__;  // suppress unused var warning
 
         try {
+            current_statement_begin__ = 48;
+            local_scalar_t__ dendpoint;
+            (void) dendpoint;  // dummy to suppress unused var warning
+
+            stan::math::initialize(dendpoint, DUMMY_VAR__);
+            stan::math::fill(dendpoint,DUMMY_VAR__);
+            stan::math::assign(dendpoint,(endpoint - 18574));
 
 
 
             // validate transformed parameters
+            current_statement_begin__ = 48;
 
             // write transformed parameters
             if (include_tparams__) {
+        vars__.push_back(dendpoint);
             }
             if (!include_gqs__) return;
             // declare and define generated quantities
@@ -451,6 +482,9 @@ public:
                                  bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
+        param_name_stream__ << "endpoint";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
         param_name_stream__ << "A_sig";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
@@ -460,6 +494,9 @@ public:
         if (!include_gqs__ && !include_tparams__) return;
 
         if (include_tparams__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "dendpoint";
+            param_names__.push_back(param_name_stream__.str());
         }
 
 
@@ -472,6 +509,9 @@ public:
                                    bool include_gqs__ = true) const {
         std::stringstream param_name_stream__;
         param_name_stream__.str(std::string());
+        param_name_stream__ << "endpoint";
+        param_names__.push_back(param_name_stream__.str());
+        param_name_stream__.str(std::string());
         param_name_stream__ << "A_sig";
         param_names__.push_back(param_name_stream__.str());
         param_name_stream__.str(std::string());
@@ -481,6 +521,9 @@ public:
         if (!include_gqs__ && !include_tparams__) return;
 
         if (include_tparams__) {
+            param_name_stream__.str(std::string());
+            param_name_stream__ << "dendpoint";
+            param_names__.push_back(param_name_stream__.str());
         }
 
 

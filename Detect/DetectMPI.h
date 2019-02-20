@@ -44,8 +44,8 @@ class DetectMPI
 		}
 
 		~DetectMPI() {
-			delete []trans;
-			delete broadenspec;
+			//delete []trans;
+			//delete broadenspec;
 		}
 
 		void Setup(double bv, double T_bt) { // Re-setup bulk velocity and temperature.
@@ -62,6 +62,36 @@ class DetectMPI
 		void SetScatParams(double A1, double A2, double w1, double w2, double e1, double e2, double InelasCS) {
 			_A1 = A1; _A2 = A2; _w1 = w1; _w2 = w2; _e1 = e1; _e2 = e2; _InelasCS = InelasCS;
 			IsUpdate = IsUpdate && response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
+		}
+
+		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double* efficiency) {
+			if(mass!=_mass || endpoint!=_endpoint) {
+				delete broadenspec;
+				TH1D* decayspec = spec.decayspec(mass, endpoint);
+				broadenspec = Broaden(decayspec);
+				delete decayspec;
+			}
+			double* detspec = new double[nvoltage];
+
+			if(!IsUpdate) {
+				double pars[11] = {1, _A1, _A2, _w1, _w2, _e1, _e2, _InelasCS, _B_A, _B_S, _B_max};
+				MPI_Bcast(pars, 11, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+				response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
+				response.SetupResponse(_B_A, _B_S, _B_max);
+			}
+
+			response.SetupEfficiency(efficiency);
+			for(int n=0; n<nvoltage; n++) {
+				double content = 0;
+				double U = voltage[n];
+				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
+					double E = broadenspec->GetBinCenter(i);
+					content += broadenspec->GetBinContent(i) * response.GetResponse(E, U);
+				}
+				detspec[n] = content;
+			}
+			IsUpdate = true;
+			return detspec;
 		}
 
 		double* DetSpec(double mass, double endpoint) { // For discrete measurement.
