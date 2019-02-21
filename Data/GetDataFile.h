@@ -28,6 +28,8 @@ class Data
 {
 	public:
 		Data() {
+			/* Selected 64runs. */
+			SelectedRunList = new int[64]{40540, 40541, 40542, 40543, 40603, 40604, 40611, 40613, 40667, 40668, 40669, 40670, 40671, 40672, 40673, 40674, 40675, 40676, 40677, 40678, 40679, 40680, 40681, 40682, 40683, 40684, 40685, 40686, 40687, 40688, 40689, 40690, 40691, 40692, 40693, 40979, 40982, 40983, 40985, 40986, 40988, 40989, 40991, 40992, 40994, 40997, 41002, 41005, 41007, 41008, 41010, 41011, 41013, 41014, 41016, 41017, 41019, 41020, 41022, 41023, 41025, 41028, 41029, 41031};
 			char* KATRINpath = getenv("KATRIN");
 			path = KATRINpath;
 			path = path + "/Data";
@@ -109,6 +111,7 @@ class Data
 		string path;
 		int NSubrun;
 		bool goodlist[NPixels];
+		int* SelectedRunList;
 
 		bool GetDataFile() {
 			ifstream fin((path+"/data.dat").c_str());
@@ -155,6 +158,14 @@ class Data
 				KIRunSummaryDocument doc;
 				string filename = (string)filelist[run]["FileName"] + "@" + DataSet;
 				doc.AddInput(filename.c_str());
+				int RunNumber = doc["RunInformation/RunNumber"].As<int>();
+				bool IsContinue = false;
+				for(int runlist=0; runlist<64; runlist++) 
+					if(RunNumber==SelectedRunList[runlist]) IsContinue = true;
+				if(!IsContinue) continue;
+				cout << "----------------------------------------------------------" << endl;
+				cout << "Reading run: " << RunNumber << endl;
+
 				/* All subruns. */
 				for(auto subRunDoc: doc.GetSubRunDocumentList()) {
 					/* HV readout. */
