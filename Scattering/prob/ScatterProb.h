@@ -9,6 +9,7 @@
 
 #include <string>
 #include <iostream>
+#include "../../Configure/Configure.h"
 #include "TMath.h"
 #include "TFile.h"
 #include "TH1D.h"
@@ -56,8 +57,8 @@ class ScatterProb
 		bool SetProbCumulate(double z) {
 			if(_z==z && IsUpdate) return false;
 			_z = z;
-			for(int i=0; i<4; i++) delete CumulatePdf[i];
-			for(int s=0; s<4; s++) {
+			for(int i=0; i<=ScatTimesMax; i++) delete CumulatePdf[i];
+			for(int s=0; s<=ScatTimesMax; s++) {
 				int nbins = (int)(1./CosThetaStep);
 				CumulatePdf[s] = new TH1D("", "", nbins, 0, 1);
 				double cumulate = 0;
@@ -73,8 +74,8 @@ class ScatterProb
 		}
 
 		double GetProbCumulate(int s, double cosmax) { // for s<=3.
-			if(s>=4) {
-				cout << "Scatter times greater than three. Not supported." << endl;
+			if(s>ScatTimesMax) {
+				cout << "Scatter times greater than " << ScatTimesMax << ". Not supported." << endl;
 				return 0;
 			}
 			if(!IsUpdate) SetProbCumulate(_z);
@@ -108,7 +109,7 @@ class ScatterProb
 	private:
 		TFile* file;
 		TH1D* dens;
-		TH1D* CumulatePdf[4]; // Pdf with variable epsilon, integrated over theta.
+		TH1D* CumulatePdf[ScatTimesMax+1]; // Pdf with variable epsilon, integrated over theta.
 
 		double tmpz;
 		double integ;

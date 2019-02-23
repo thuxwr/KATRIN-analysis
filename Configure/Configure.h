@@ -18,8 +18,10 @@
 
 #define NRings 13
 
-#define IsSynchrotron true //If true, use cyclotron radiation when calculating detector response.
+#define IsSynchrotron false //If true, use cyclotron radiation when calculating detector response.
 /* Enable or disable systematic uncertainties. */
+
+#define ScatTimesMax 12
 
 #include <iostream>
 #include <fstream>

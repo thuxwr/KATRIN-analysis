@@ -58,23 +58,23 @@ class Response
 		}
 
 		void initialize(int argc, char** argv) {
-			if(IsSynchrotron) {
-				/* Setup synchrotron transmission from Kasper. */
-				string KASPER_path = getenv("KASPERSYS");
-				if(KASPER_path=="") {
-					cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
-					exit(0);
-				}
-				if(true) { //Always use SSC setup.
-					char** input = new char*[2];
-					input[0] = argv[0];
-					KASPER_path += "/config/SSC/ssc.xml";
-					input[1] = (char*)(KASPER_path.data());
-					Initialize(2, input);
-					myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS3");
-					myWGTS->Initialize();
+			/* Setup synchrotron transmission from Kasper. */
+			string KASPER_path = getenv("KASPERSYS");
+			if(KASPER_path=="") {
+				cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
+				exit(0);
+			}
+			if(true) { //Always use SSC setup.
+				char** input = new char*[2];
+				input[0] = argv[0];
+				KASPER_path += "/config/SSC/ssc.xml";
+				input[1] = (char*)(KASPER_path.data());
+				Initialize(2, input);
+				myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
+				myWGTS->Initialize();
 
-					/* Cyclotron radiation only depends on z position and pitch angle. */
+				/* Cyclotron radiation only depends on z position and pitch angle. */
+				if(IsSynchrotron) {
 					trans = new SSCTransmissionSynchrotron;
 					trans->Initialize();
 				}
@@ -89,8 +89,10 @@ class Response
 		void SetSlice(int iSlice) {
 			if(iSlice==_slice) return;
 			_slice = iSlice;
-			trans->SetVoxel(&(myWGTS->GetVoxel(iSlice)));
-			data = &(trans->GetSynchrotronData());
+			if(IsSynchrotron) {
+				trans->SetVoxel(&(myWGTS->GetVoxel(iSlice)));
+				data = &(trans->GetSynchrotronData());
+			}
 			IsUpdate = false;
 		}
 
@@ -138,7 +140,7 @@ class Response
 					for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
 						double voltage = x - gs.E[0] + gs.E[npixel];
 						double cosmax = GetCosMax(voltage-epsilon-0.5*binwidth);
-						for(int s=1; s<=3; s++) {
+						for(int s=1; s<=ScatTimesMax; s++) {
 							ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
 						}
 					}
