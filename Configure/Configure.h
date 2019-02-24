@@ -7,9 +7,11 @@
 #ifndef Configure_h
 #define Configure_h
 
+#define ScatTimesMax 22
+
 #define NfinalstateMAX 500 //Discretized final state number
-#define NbinsDecaySpec 800 //Nbins for decay spectrum
-#define LowBoundary -155 //Low boundary for decay spectrum respect to endpoint, in unit:eV
+#define NbinsDecaySpec 5000 //Nbins for decay spectrum
+#define LowBoundary -ScatTimesMax*10-20 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
 
 #define NVoltageMax 10000 //Nbins for detected spectrum
@@ -20,8 +22,6 @@
 
 #define IsSynchrotron false //If true, use cyclotron radiation when calculating detector response.
 /* Enable or disable systematic uncertainties. */
-
-#define ScatTimesMax 12
 
 #include <iostream>
 #include <fstream>

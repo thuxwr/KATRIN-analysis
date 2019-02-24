@@ -63,7 +63,7 @@ class Data
 				if(Abs(ColumnDensity[subrun]-4.46e21)>5e18) continue;
 
 				/* Energy in [-100, 50] eV. */
-				if(Voltage[subrun]<Katrin.E_0_center-100 || Voltage[subrun]>Katrin.E_0_center+50) continue;
+				if(Voltage[subrun]<Katrin.E_0_center-200 || Voltage[subrun]>Katrin.E_0_center+50) continue;
 
 				/* Copy selected data. */
 				TritiumPurity[subruncount] = TritiumPurity[subrun];

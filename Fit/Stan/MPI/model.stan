@@ -31,7 +31,7 @@ transformed data {
 parameters {
 	//real<lower=0, upper=100> mass;
 	real<lower=18554, upper=18594> endpoint;
-	real<lower=2e4, upper=6e4> A_sig;
+	real<lower=1e4, upper=100e4> A_sig;
 	real<lower=10, upper=70> A_bkg;
 	//real<lower=2.63, upper=2.73> B_A;
 	//real<lower=24950, upper=25450> B_S;
@@ -58,7 +58,7 @@ model {
 		pred[n] = sig[n] * A_sig + A_bkg * bkg[n];
 		//target += (rate[n]-pred[n]) * (pred[n]-rate[n]) / error[n] / error[n];
 		//par_std[n] = (rate[n] - pred[n])/error[n];
-		//if(n<=30) print("Nbin: ", n, " Pred: ", pred[n], " count: ", count[n], " A_sig: ", A_sig);
+		//print("Nbin: ", n, " Pred: ", pred[n], " count: ", count[n], " A_sig: ", A_sig);
 	}
 	count ~ poisson(pred);
 //	B_A ~ normal(2.68, 0.01);
