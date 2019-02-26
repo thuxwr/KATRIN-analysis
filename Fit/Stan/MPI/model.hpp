@@ -197,7 +197,7 @@ public:
         double endpoint(0);
         endpoint = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(18554,18594,endpoint);
+            writer__.scalar_lub_unconstrain(18564,18584,endpoint);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable endpoint: ") + e.what());
         }
@@ -210,7 +210,7 @@ public:
         double A_sig(0);
         A_sig = vals_r__[pos__++];
         try {
-            writer__.scalar_lub_unconstrain(10000.0,1000000.0,A_sig);
+            writer__.scalar_lub_unconstrain(50000.0,500000.0,A_sig);
         } catch (const std::exception& e) { 
             throw std::runtime_error(std::string("Error transforming variable A_sig: ") + e.what());
         }
@@ -264,16 +264,16 @@ public:
             local_scalar_t__ endpoint;
             (void) endpoint;  // dummy to suppress unused var warning
             if (jacobian__)
-                endpoint = in__.scalar_lub_constrain(18554,18594,lp__);
+                endpoint = in__.scalar_lub_constrain(18564,18584,lp__);
             else
-                endpoint = in__.scalar_lub_constrain(18554,18594);
+                endpoint = in__.scalar_lub_constrain(18564,18584);
 
             local_scalar_t__ A_sig;
             (void) A_sig;  // dummy to suppress unused var warning
             if (jacobian__)
-                A_sig = in__.scalar_lub_constrain(10000.0,1000000.0,lp__);
+                A_sig = in__.scalar_lub_constrain(50000.0,500000.0,lp__);
             else
-                A_sig = in__.scalar_lub_constrain(10000.0,1000000.0);
+                A_sig = in__.scalar_lub_constrain(50000.0,500000.0);
 
             local_scalar_t__ A_bkg;
             (void) A_bkg;  // dummy to suppress unused var warning
@@ -406,8 +406,8 @@ public:
         static const char* function__ = "KATRIN_namespace::write_array";
         (void) function__;  // dummy to suppress unused var warning
         // read-transform, write parameters
-        double endpoint = in__.scalar_lub_constrain(18554,18594);
-        double A_sig = in__.scalar_lub_constrain(10000.0,1000000.0);
+        double endpoint = in__.scalar_lub_constrain(18564,18584);
+        double A_sig = in__.scalar_lub_constrain(50000.0,500000.0);
         double A_bkg = in__.scalar_lub_constrain(10,70);
         vars__.push_back(endpoint);
         vars__.push_back(A_sig);

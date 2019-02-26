@@ -10,7 +10,7 @@
 #define ScatTimesMax 22
 
 #define NfinalstateMAX 500 //Discretized final state number
-#define NbinsDecaySpec 5000 //Nbins for decay spectrum
+#define NbinsDecaySpec 2000 //Nbins for decay spectrum
 #define LowBoundary -ScatTimesMax*10-20 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
 
@@ -20,7 +20,7 @@
 
 #define NRings 13
 
-#define IsSynchrotron false //If true, use cyclotron radiation when calculating detector response.
+#define IsSynchrotron true //If true, use cyclotron radiation when calculating detector response.
 /* Enable or disable systematic uncertainties. */
 
 #include <iostream>

@@ -32,7 +32,8 @@
 #include "TGraph.h"
 
 #define Nslices 1 // number of source slices
-#define NPointsMax 1000
+#define NPointsMax 2000
+#define NVoltage 17
 
 using namespace std;
 using namespace Physics;
@@ -46,12 +47,15 @@ class Response
 			_B_S = 0;
 			_B_max = 0;
 			tolerance = 1e-7;
-			response = new double*[NPixels];
-			for(int pixel=0; pixel<NPixels; pixel++) response[pixel] = new double[NPointsMax];
+			response = new double**[NVoltage];
+			for(int nvoltage=0; nvoltage<NVoltage; nvoltage++) {
+				response[nvoltage] = new double*[NPixels];
+				for(int pixel=0; pixel<NPixels; pixel++) response[nvoltage][pixel] = new double[NPointsMax];
+			}
 			X = new double[NPointsMax];
 			IsUpdate = false;
 			_slice = -1;
-			//HV = new double[26] {16975, 17175, 17375, 17575, 17775, 17975, 18175, 18275, 18375, 18400, 18425, 18450, 18475, 18485, 18495, 18505, 18515, 18525, 18535, 18545, 18555, 18565, 18575, 18585, 18595, 18605};
+			HV = new double[NVoltage] {18175, 18275, 18375, 18400, 18425, 18450, 18475, 18485, 18495, 18505, 18515, 18525, 18535, 18545, 18555, 18565, 18575}; // At most 400eV range.
 		}
 
 		~Response() {
@@ -73,7 +77,7 @@ class Response
 				myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
 				myWGTS->Initialize();
 
-				/* Cyclotron radiation only depends on z position and pitch angle. */
+				/* Synchrotron radiation only depends on z position and pitch angle. */
 				if(IsSynchrotron) {
 					trans = new SSCTransmissionSynchrotron;
 					trans->Initialize();
@@ -113,42 +117,46 @@ class Response
 			NPoints = 0;
 
 			for(int npixel=0; npixel<NPixels; npixel++) {
-				int npoint = 0;
 				_B_A = B_A - gs.B_A[0] + gs.B_A[npixel];
 				_B_S = B_S - gs.B_S[0] + gs.B_S[npixel];
 				_B_max = B_max - gs.B_max[0] + gs.B_max[npixel];
-				for(double x=0; x<=width; x+=0.01) { // Inside filter width, no inelastic scattering.
-					if(!IsXCalculated) X[npoint] = x;
-					/* Reset magnetic field for each ring. */
-					double voltage = x - gs.E[0] + gs.E[npixel]; 
-					double cosmax = GetCosMax(voltage);
-					UnscatResponse = scat.GetProbCumulate(0, cosmax);
-					response[npixel][npoint] = UnscatResponse;
-					npoint++;
-				}
 
-				for(double x=width+0.1; x<=width+8.5; x+=8.4) { // Flat.
-					if(!IsXCalculated) X[npoint] = x;
-					response[npixel][npoint] = UnscatResponse;
-					npoint++;
-				}
-
-				double binwidth = 0.2;
-				for(double x=9.6; x<120; x+=binwidth) { // Should consider inelastic scattering.
-					if(!IsXCalculated) X[npoint] = x;
-					double ScatResponse = 0;
-					for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
-						double voltage = x - gs.E[0] + gs.E[npixel];
-						double cosmax = GetCosMax(voltage-epsilon-0.5*binwidth);
-						for(int s=1; s<=ScatTimesMax; s++) {
-							ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
-						}
+				/* Detector response for different HVs. */
+				for(int nvoltage=0; nvoltage<NVoltage; nvoltage++) {
+					int npoint = 0;
+					for(double x=0; x<=width; x+=0.01) { // Inside filter width, no inelastic scattering.
+						if(!IsXCalculated) X[npoint] = x;
+						/* Reset magnetic field for each ring. */
+						double voltage = x - gs.E[0] + gs.E[npixel]; 
+						double cosmax = GetCosMax(voltage, HV[nvoltage]);
+						UnscatResponse = scat.GetProbCumulate(0, cosmax);
+						response[nvoltage][npixel][npoint] = UnscatResponse;
+						npoint++;
 					}
-					response[npixel][npoint] = UnscatResponse+ScatResponse;
-					npoint++;
+	
+					for(double x=width+0.1; x<=width+8.5; x+=8.4) { // Flat.
+						if(!IsXCalculated) X[npoint] = x;
+						response[nvoltage][npixel][npoint] = UnscatResponse;
+						npoint++;
+					}
+	
+					double binwidth = 0.2;
+					for(double x=9.6; x<UpBoundary-LowBoundary; x+=binwidth) { // Should consider inelastic scattering.
+						if(!IsXCalculated) X[npoint] = x;
+						double ScatResponse = 0;
+						for(double epsilon=0; epsilon<x; epsilon+=binwidth) {
+							double voltage = x - gs.E[0] + gs.E[npixel];
+							double cosmax = GetCosMax(voltage-epsilon-0.5*binwidth, HV[nvoltage]);
+							for(int s=1; s<=ScatTimesMax; s++) {
+								ScatResponse += engloss.GetEnergyLoss(s, epsilon) * scat.GetProbCumulate(s, cosmax) * binwidth;
+							}
+						}
+						response[nvoltage][npixel][npoint] = UnscatResponse+ScatResponse;
+						npoint++;
+					}
+					if(!IsXCalculated) NPoints = npoint;
+					IsXCalculated = true;
 				}
-				if(!IsXCalculated) NPoints = npoint;
-				IsXCalculated = true;
 			}
 			_B_A = B_A;
 			_B_S = B_S;
@@ -266,9 +274,10 @@ class Response
 			return false;
 		}
 
-		double** response; //dimensions: pixel, E-U.
+		double*** response; //dimensions: HV, pixel, E-U.
 		double* X; // X axis for E-U.
 		int NPoints;
+		double* HV;
 
 	private:
 		ScatterProb scat;
@@ -285,7 +294,6 @@ class Response
 		double tolerance;
 		int _slice;
 		bool IsUpdate;
-		//double* HV;
 
 		double gamma(double energy) {
 			return energy / m_e + 1;

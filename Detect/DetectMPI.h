@@ -64,6 +64,7 @@ class DetectMPI
 			IsUpdate = IsUpdate && response.SetupScatParameters(_A1, _A2, _w1, _w2, _e1, _e2, _InelasCS);
 		}
 
+		/*
 		double* DetSpec(double mass, double endpoint, int nvoltage, double* voltage, double* efficiency) {
 			if(mass!=_mass || endpoint!=_endpoint) {
 				delete broadenspec;
@@ -93,6 +94,7 @@ class DetectMPI
 			IsUpdate = true;
 			return detspec;
 		}
+		*/
 
 		double* DetSpec(double mass, double endpoint) { // For discrete measurement.
 			delete detspec;
@@ -165,7 +167,7 @@ class DetectMPI
 
 			double* effi = new double[150];
 			for(int i=0; i<150; i++) effi[i] = 1;
-			response.SetupEfficiency(effi);
+			response.SetupEfficiency(effi, 18575);
 				double content = 0;
 				double U = voltage;
 				for(int i=1; i<=broadenspec->GetNbinsX(); i++) {
@@ -215,7 +217,7 @@ class DetectMPI
 					continue;
 				}
 
-				response.SetupEfficiency(data.Efficiency[subrun]);
+				response.SetupEfficiency(data.Efficiency[subrun], data.Voltage[subrun]);
 
 				double content = 0;
 				double U = data.Voltage[subrun];

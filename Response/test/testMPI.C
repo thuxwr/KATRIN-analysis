@@ -44,7 +44,7 @@ KATRIN Katrin;
 	cout << "Finish response. Start efficiency." << endl;
 	double* efficiency = new double[148];
 	for(int i=0; i<148; i++) efficiency[i] = 1;
-		res.SetupEfficiency(efficiency);
+		res.SetupEfficiency(efficiency, 18564.9);
 
 	TH1D* th = new TH1D("haha", "haha", 10000,0,100);
 	for(int bin=1; bin<=10000; bin++) th->SetBinContent(bin, res.GetResponse(th->GetBinCenter(bin), 0));

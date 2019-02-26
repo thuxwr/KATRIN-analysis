@@ -30,8 +30,8 @@ transformed data {
 
 parameters {
 	//real<lower=0, upper=100> mass;
-	real<lower=18554, upper=18594> endpoint;
-	real<lower=1e4, upper=100e4> A_sig;
+	real<lower=18564, upper=18584> endpoint;
+	real<lower=5e4, upper=50e4> A_sig;
 	real<lower=10, upper=70> A_bkg;
 	//real<lower=2.63, upper=2.73> B_A;
 	//real<lower=24950, upper=25450> B_S;
