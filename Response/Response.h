@@ -307,7 +307,7 @@ class Response
 
 		double SinSquare(double x, double hv = -1) {
 			if(hv<=0) hv = katrin.E_0_center;
-			return x / hv / (gamma(hv)+1) * 2 * _B_S / _B_A;
+			return x / (hv+x) / (gamma(hv+x)+1) * 2 * _B_S / _B_A;
 		}
 
 		double GetCosMax(double x, double hv = -1) {
