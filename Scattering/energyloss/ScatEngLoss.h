@@ -11,6 +11,7 @@
 #include <complex>
 #include "TH1D.h"
 #include "TVirtualFFT.h"
+#include "../../Configure/Configure.h"
 
 using namespace std;
 using namespace TMath;
