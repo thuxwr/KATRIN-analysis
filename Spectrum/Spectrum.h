@@ -25,19 +25,19 @@ class Spectrum
 	public:
 		Spectrum() {
 			/* Import final state distribution. */
-			char* KATRINpath = getenv("KATRIN");
-			if(KATRINpath==0) {
-				cout << "Environment variable 'KATRIN' is not defined." << endl;
+			char* kasper = getenv("KASPERSYS");
+			if(kasper==0) {
+				cout << "Environment variable 'KASPERSYS' is not defined." << endl;
 				exit(0);
 			}
 
-			string path = (string)KATRINpath + "/data/SSC/";
+			string path = (string)kasper + "/data/SSC/";
 
 			/* T2 data. */
 			{
 			ifstream data((path + "FSD_DOSS_T2_rebinned.txt").c_str());
 			if(!(data.is_open())) {
-				cout << "Data file $KATRIN/data/SSC/FSD_DOSS_T2_rebinned.txt cannot be opened." << endl;
+				cout << "Data file $KASPERSYS/data/SSC/FSD_DOSS_T2_rebinned.txt cannot be opened." << endl;
 				exit(0);
 			}
 
@@ -57,7 +57,7 @@ class Spectrum
 			{
 			ifstream data((path + "FSD_DOSS_DT_rebinned.txt").c_str());
 			if(!(data.is_open())) {
-				cout << "Data file $KATRIN/data/SSC/FSD_DOSS_DT_rebinned.txt cannot be opened." << endl;
+				cout << "Data file $KASPERSYS/data/SSC/FSD_DOSS_DT_rebinned.txt cannot be opened." << endl;
 				exit(0);
 			}
 
@@ -77,7 +77,7 @@ class Spectrum
 			{
 			ifstream data((path + "FSD_Saenz_HTmod.txt").c_str());
 			if(!(data.is_open())) {
-				cout << "Data file $KATRIN/data/SSC/FSD_Saenz_HTmod.txt cannot be opened." << endl;
+				cout << "Data file $KASPERSYS/data/SSC/FSD_Saenz_HTmod.txt cannot be opened." << endl;
 				exit(0);
 			}
 
