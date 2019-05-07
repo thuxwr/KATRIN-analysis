@@ -8,17 +8,19 @@
 #define Configure_h
 
 #define NfinalstateMAX 500 //Discretized final state number
-#define NbinsDecaySpec 800 //Nbins for decay spectrum
+#define NbinsDecaySpec 2000 //Nbins for decay spectrum
 #define LowBoundary -100 //Low boundary for decay spectrum respect to endpoint, in unit:eV
 #define UpBoundary 5 //Up boundary for decay spectrum respect to endpoint, in unit:eV
 
 #define NVoltageMax 10000 //Nbins for detected spectrum
-#define DetLow -30 //Low boundary for detected spectrum. Should be larger than boundary for decay spectrum.
+#define DetLow -95 //Low boundary for detected spectrum. Should be larger than boundary for decay spectrum.
 #define DetUp 5 //Up boundary for detected spectrum.
+
+#define ScatTimesMax 11
 
 #define NRings 13
 
-#define IsSynchrotron true //If true, use cyclotron radiation when calculating detector response.
+#define IsSynchrotron false //If true, use cyclotron radiation when calculating detector response.
 /* Enable or disable systematic uncertainties. */
 
 #include <iostream>
@@ -29,8 +31,6 @@
 
 using namespace std;
 using namespace TMath;
-
-#define ScatTimesMax CeilNint((UpBoundary-LowBoundary)/10.)
 
 class KATRIN
 {
@@ -70,17 +70,20 @@ class KATRIN
 		~KATRIN(){}
 
 		/* Electromagnetic field. */
-		double B_A = 2.68; // in unit:Gauss
-		double B_S = 2.52e4; // in unit:Gauss
-		double B_max = 4.2e4; // in unit:Gauss
+//		double B_A = 2.68; // in unit:Gauss
+//		double B_S = 2.52e4; // in unit:Gauss
+//		double B_max = 4.2e4; // in unit:Gauss
+		double B_A = 6.32;
+		double B_S = 3.14965e4;
+		double B_max = 4.2332e4;
 		double B_A_sigma = 0.01;
 		double B_S_sigma = 50;
 		double B_max_sigma = 100;
 
 		/* Source. */
 		//double epsilon_T = 0.95; // T2 purity
-		double T2concentration = 0;
-		double DTconcentration = 1;
+		double T2concentration = 0.95;
+		double DTconcentration = 0.05;
 		double HTconcentration = 0;
 		double T_bt = 30; // temperature in WGTS, in unit:K
 		double bv = 13; //weighed mean bulk velocity, in unit:m/s.

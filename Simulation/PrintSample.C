@@ -33,8 +33,10 @@ int main(int argc, char** argv) {
 
 	sim.initialize(argc, argv);
 	sim.SetupScatParameters(0.204, 0.0556, 1.85, 12.5, 12.6, 14.3, 3.4e-18);
-	sim.SetMagnetic(Katrin.B_A, Katrin.B_S, Katrin.B_max);
-	double* sample = sim.Generate(mass, endpoint, Katrin.Nbins, Katrin.Voltage, Katrin.Time);
+	sim.SetMagnetic(6.32, 3.14965e4, 4.2332e4);
+	sim.SetSlice(0);
+	//double* sample = sim.Generate(mass, endpoint, Katrin.Nbins, Katrin.Voltage, Katrin.Time);
+	double* sample = sim.Asimov(mass, endpoint, Katrin.Nbins, Katrin.Voltage, Katrin.Time, 1, 1);
 
 	char* KATRINpath = getenv("KATRIN");
 	string path = KATRINpath;

@@ -68,6 +68,7 @@ class Simulation
 			double* theory = detect.DetSpec(mass, endpoint, nvoltage, voltage);
 			double* asimov = new double[nvoltage];
 			for(int n=0; n<nvoltage; n++) {
+				cout << "signal: " << n << "  " << theory[n] << endl;
 				double signal = A_sig * theory[n] * time[n];
 				double bkg = A_bkg * katrin.Bkg_rate * time[n];
 				double entries = signal + bkg;

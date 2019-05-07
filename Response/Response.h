@@ -51,26 +51,24 @@ class Response
 		}
 
 		void initialize(int argc, char** argv) {
-			if(IsSynchrotron) {
-				/* Setup synchrotron transmission from Kasper. */
-				string KASPER_path = getenv("KASPERSYS");
-				if(KASPER_path=="") {
-					cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
-					exit(0);
-				}
-				if(true) { //Always use SSC setup.
-					char** input = new char*[2];
-					input[0] = argv[0];
-					KASPER_path += "/config/SSC/ssc.xml";
-					input[1] = (char*)(KASPER_path.data());
-					Initialize(2, input);
-					myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
-					myWGTS->Initialize();
+			/* Setup synchrotron transmission from Kasper. */
+			string KASPER_path = getenv("KASPERSYS");
+			if(KASPER_path=="") {
+				cout << "Fatal error: Cannot find Kasper path. Maybe Kasper is not installed correctly!" << endl;
+				exit(0);
+			}
+			if(true) { //Always use SSC setup.
+				char** input = new char*[2];
+				input[0] = argv[0];
+				KASPER_path += "/config/SSC/ssc.xml";
+				input[1] = (char*)(KASPER_path.data());
+				Initialize(2, input);
+				myWGTS = KToolbox::GetInstance().Get<SSCWGTS>("WGTS1Radial");
+				myWGTS->Initialize();
 
-					/* Cyclotron radiation only depends on z position and pitch angle. */
-					trans = new SSCTransmissionSynchrotron;
-					trans->Initialize();
-				}
+				/* Cyclotron radiation only depends on z position and pitch angle. */
+				trans = new SSCTransmissionSynchrotron;
+				trans->Initialize();
 			}
 		}
 
